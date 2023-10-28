@@ -30,13 +30,13 @@ const updateUser = (req,res)=>{
 
 };
 
-//@desc delete Users
-//@route DELETE /api/Users/:id
-//@access public
-// const deleteUser =(req,res)=>{
-//     res.status(200).json({message:`delete Users for ${req.params.id}`});
+// @desc delete Users
+// @route DELETE /api/Users/:id
+// @access public
+const deleteUser =(req,res)=>{
+    res.status(200).json({message:`delete Users for ${req.params.id}`});
 
-// }
+}
 
 
 module.exports = { getUsers,createUser,getUser,deleteUser,updateUser };
