@@ -1,7 +1,8 @@
 const mongoose = require ("mongoose");
 
-const userSchema = new mongoose.Schema({
-    name:{type:String,required:true},
+const userSchema =new   mongoose.Schema(
+    {
+    userName:{type:String,required:true},
     branch:{
         type:String,
         enum:[
@@ -15,4 +16,9 @@ const userSchema = new mongoose.Schema({
     codeChefId: { type: String, required:true }, 
     password: { type: String, required: true },
     stars:{type:Number}
-})
+},
+{
+  timestamps: true,
+});
+
+module.exports = mongoose.model("User", userSchema);
