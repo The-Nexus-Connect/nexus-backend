@@ -1,9 +1,12 @@
 const asyncHandler= require("express-async-handler");
+const User = require("../models/userModel");
+
 //@desc Get all Users
 //@route Get /api/Users
 //@access public
 const getUsers = asyncHandler(async (req,res)=>{
-    res.status(200).json({message:"Get all Users"});
+    const user  = await User.find();
+    res.status(200).json(user);
 });
 
 //@desc Create new Users
@@ -11,8 +14,22 @@ const getUsers = asyncHandler(async (req,res)=>{
 //@access public
 const createUser =asyncHandler (async (req,res)=>{
     console.log(req.body);
-    res.status(201).json({message:"Create Users"});
+    const {userName,branch,email,libId,bio,codeChefId,password,stars}=req.body;
+    const user = await User.create({
+        userName,
+        branch,
+        email,
+        libId,
+        bio,
+        codeChefId,
+        password,
+        stars
+       
 
+      });
+    
+      res.status(201).json(user);
+   
 });
 
 //@desc get Users
