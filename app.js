@@ -8,7 +8,8 @@ const port = process.env.PORT || 5001;
 
 connectDb();
 app.use(express.json());
-app.use("/api/Users",require("./src/routes/UserRoutes"));
+app.use("/api/users",require("./src/routes/UserRoutes"));
+// app.use("/api/contests",require("./src/routes/ContestRoutes"));
 
 
 app.listen(port,()=>{
