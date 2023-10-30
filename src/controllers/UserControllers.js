@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler");
 const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 
 //@desc Get all Users
 //@route Get /api/users
@@ -96,7 +97,7 @@ const loginUser = asyncHandler(async (req, res) => {
         },
       },
       process.env.ACCESS_TOKEN_SECERT,
-      { expiresIn: "15m" }
+      { expiresIn: "1d" }
     );
     res.status(200).json({ accessToken });
   } else {
@@ -105,17 +106,9 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 });
 
-//@desc Current user info
-//@route POST /api/users/current
-//@access private
-const currentUser = asyncHandler(async (req, res) => {
-  res.json(req.user);
-});
-
 module.exports = {
   registerUser,
   loginUser,
-  currentUser,
   getUsers,
   getUser,
   updateUser,
