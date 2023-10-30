@@ -44,36 +44,41 @@ const updateUser = asyncHandler(async (req, res) => {
 //@route POST /api/users/register
 //@access public
 const registerUser = asyncHandler(async (req, res) => {
-  const { username, branch, email, libId, bio, codechefId, password, stars } =
-    req.body;
-  const userAvailable = await User.findOne({ email });
-  if (userAvailable) {
-    res.status(400);
-    throw new Error("User already registered!");
-  }
+  try {
+    const { username, branch, email, libId, bio, codechefId, password, stars } =
+      req.body;
 
-  //Hash password
-  const hashedPassword = await bcrypt.hash(password, 10);
-  console.log("Hashed Password: ", hashedPassword);
-  const user = await User.create({
-    username,
-    branch,
-    email,
-    libId,
-    bio,
-    codechefId,
-    password: hashedPassword,
-    stars,
-  });
+    // Check if the user is already registered
+    const userAvailable = await User.findOne({ email });
+    if (userAvailable) {
+      return res.status(400).json({ error: "User already registered!" });
+    }
 
-  console.log(`User created ${user}`);
-  if (user) {
-    res.status(201).json({ _id: user.id, email: user.email });
-  } else {
-    res.status(400);
-    throw new Error("User data is not valid");
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    console.log("Hashed Password: ", hashedPassword);
+
+    // Create the user
+    const user = await User.create({
+      username,
+      branch,
+      email,
+      libId,
+      bio,
+      codechefId,
+      password: hashedPassword,
+      stars,
+    });
+
+    // Send a success response
+    return res
+      .status(200)
+      .json({ message: "User registered successfully", user });
+  } catch (error) {
+    // Handle any errors that occur during registration
+    console.error("Error:", error);
+    return res.status(500).json({ error: "Registration failed" });
   }
-  res.json({ message: "Register the user" });
 });
 
 //@desc Login user
