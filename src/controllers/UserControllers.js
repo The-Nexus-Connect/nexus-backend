@@ -45,7 +45,7 @@ const updateUser = asyncHandler(async (req, res) => {
 //@access public
 const registerUser = asyncHandler(async (req, res) => {
   try {
-    const { username, branch, email, libId, bio, codechefId, password, stars } =
+    const { username, branch, email, libId, bio, codechefId, password,  } =
       req.body;
 
     // Check if the user is already registered
@@ -67,7 +67,7 @@ const registerUser = asyncHandler(async (req, res) => {
       bio,
       codechefId,
       password: hashedPassword,
-      stars,
+    
     });
 
     // Send a success response

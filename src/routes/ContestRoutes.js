@@ -4,7 +4,7 @@ const {
     getContests,
 } = require("../controllers/UserControllers");
 
-router.route("/").get(getContests);
-router.route("/codechef/:id").get(getContests);
+// router.route("/").get(getContests);
+// router.route("/codechef/:id").get(getContests);
 
 module.exports = router;

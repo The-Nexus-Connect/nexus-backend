@@ -8,10 +8,16 @@ const codechefSchema = new mongoose.Schema(
       ref: "User",
     },
     isEnrolled: { type: Boolean, required: true , default: false},
+    success:{type:Boolean},
+    profile:{type: String},
+    
     currentRating: { type: Number, required: true },
     afterRating: { type: Number, required: true },
-    globalRank: { type: Number, required: true },
+    highestRating:{ type: Number},
+    globalRank: { type: Number },
+    countryRank: { type: Number },
     platform: { type: String, required: true },
+    starts:{ type: Number },
   },
   {
     timestamps: true,
