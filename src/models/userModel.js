@@ -15,7 +15,6 @@ const userSchema = new mongoose.Schema(
     leetcodeId: { type: String },
     githubId: { type: String },
     password: { type: String, required: true },
-    stars: { type: Number },
   },
   {
     timestamps: true,
