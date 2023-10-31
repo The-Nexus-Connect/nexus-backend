@@ -17,7 +17,7 @@ app.use(cors({
 
 app.use(express.json());
 app.use("/api/users",require("./src/routes/UserRoutes"));
-// app.use("/api/contests",require("./src/routes/ContestRoutes"));
+app.use("/api/contests",require("./src/routes/ContestRoutes"));
 
 
 app.listen(port,()=>{
