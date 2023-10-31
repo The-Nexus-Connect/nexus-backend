@@ -70,10 +70,23 @@ const registerUser = asyncHandler(async (req, res) => {
     
     });
 
+    const accessToken = jwt.sign(
+      {
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+        },
+      },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "1d" }
+    );
+
+
     // Send a success response
     return res
       .status(200)
-      .json({ message: "User registered successfully", user });
+      .json({ message: "User registered successfully", user, accessToken });
   } catch (error) {
     // Handle any errors that occur during registration
     console.error("Error:", error);
@@ -97,9 +110,9 @@ const loginUser = asyncHandler(async (req, res) => {
       const accessToken = jwt.sign(
         {
           user: {
+            id: user.id,
             username: user.username,
             email: user.email,
-            id: user.id,
           },
         },
         process.env.ACCESS_TOKEN_SECRET,
