@@ -10,6 +10,6 @@ const { getCodechefProfile } = require("../controllers/codechefController");
 
 router.route("/").get(getContests).post(postContests);
 router.route("/:id").get(getContest).put(updateContest);
-router.route("/code").get(getCodechefProfile);
+router.route("/codechef/:id").get(getCodechefProfile);
 
 module.exports = router;

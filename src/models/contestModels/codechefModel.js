@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const codechefSchema = new mongoose.Schema(
   {
-    user: {
+    user_id: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
       ref: "User",
@@ -15,7 +15,7 @@ const codechefSchema = new mongoose.Schema(
     success:{type:Boolean},
     profile:{type: String},
     currentRating: { type: Number, required: true },
-    afterRating: { type: Number, required: true },
+    afterRating: { type: Number },
     highestRating:{ type: Number},
     globalRank: { type: Number },
     countryRank: { type: Number },
