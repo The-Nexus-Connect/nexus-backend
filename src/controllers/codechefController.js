@@ -11,7 +11,7 @@ const { JSDOM } = jsdom;
 const getCodechefProfile = async (req, res) => {
   try {
     let data = await axios.get(
-      'https://www.codechef.com/users/hrsh_kshri'
+      `https://www.codechef.com/users/${req.params.id}`
     );
     let dom = new JSDOM(data.data);
     let document = dom.window.document;
