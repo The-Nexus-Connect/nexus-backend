@@ -45,7 +45,7 @@ const updateUser = asyncHandler(async (req, res) => {
 //@access public
 const registerUser = asyncHandler(async (req, res) => {
   try {
-    const { username, branch, email, libId, bio, codechefId, password,  } =
+    const { username, branch, email, libId, bio, codechefId, password } =
       req.body;
 
     // Check if the user is already registered
@@ -67,13 +67,31 @@ const registerUser = asyncHandler(async (req, res) => {
       bio,
       codechefId,
       password: hashedPassword,
-    
     });
+
+    const accessToken = jwt.sign(
+      {
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          bio: user.bio,
+          branch: user.branch,
+          libId: user.libId,
+          codechefId: user.codechefId,
+          hackerrankId: user.hackerrankId,
+          leetcodeId: user.leetcodeId,
+          githubId: user.githubId,
+        },
+      },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "1d" }
+    );
 
     // Send a success response
     return res
       .status(200)
-      .json({ message: "User registered successfully", user });
+      .json({ message: "User registered successfully", user, accessToken });
   } catch (error) {
     // Handle any errors that occur during registration
     console.error("Error:", error);
@@ -97,9 +115,16 @@ const loginUser = asyncHandler(async (req, res) => {
       const accessToken = jwt.sign(
         {
           user: {
+            id: user.id,
             username: user.username,
             email: user.email,
-            id: user.id,
+            bio: user.bio,
+            branch: user.branch,
+            libId: user.libId,
+            codechefId: user.codechefId,
+            hackerrankId: user.hackerrankId,
+            leetcodeId: user.leetcodeId,
+            githubId: user.githubId,
           },
         },
         process.env.ACCESS_TOKEN_SECRET,
