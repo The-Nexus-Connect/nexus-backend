@@ -55,8 +55,6 @@ const postContests = asyncHandler(async (req, res) => {
       name,
       description,
       startTime,
-      platform,
-      isEnrolled,
       totalParticipant,
     } = req.body;
 
@@ -66,8 +64,6 @@ const postContests = asyncHandler(async (req, res) => {
       name,
       description,
       startTime,
-      platform,
-      isEnrolled,
       totalParticipant,
     });
     res.status(200).json(contest);

@@ -2,8 +2,9 @@ const express = require("express");
 const router = express.Router();
 const {
     getContests,
+    getContest,
     postContests,
-    updateContests,
+    updateContest,
 } = require("../controllers/ContestControllers");
 
 router.route("/").get(getContests).post(postContests);

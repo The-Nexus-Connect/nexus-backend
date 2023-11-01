@@ -15,6 +15,12 @@ const userSchema = new mongoose.Schema(
     leetcodeId: { type: String },
     githubId: { type: String },
     password: { type: String, required: true },
+    enrolledContests: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Contest",
+      },
+    ]
   },
   {
     timestamps: true,
