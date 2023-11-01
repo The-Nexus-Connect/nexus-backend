@@ -18,7 +18,8 @@ app.use(cors({
 app.use(express.json());
 app.use("/api/users",require("./src/routes/UserRoutes"));
 app.use("/api/contests",require("./src/routes/ContestRoutes"));
-// app.use("/api/codechef/:handle",require("./src/routes/codechefAPI.js"));
+// const codechefController = require('./src/controllers/codechefController');
+// app.use("/:id",codechefController.getCodechefProfile);
 
 
 app.listen(port,()=>{
