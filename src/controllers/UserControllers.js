@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const User = require("../models/userModel");
+const Codechef= require("../models/contestModels/codechefModel")
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
@@ -68,6 +69,12 @@ const registerUser = asyncHandler(async (req, res) => {
       codechefId,
       password: hashedPassword,
     });
+
+    const codechefID = await Codechef.create({
+      user_id:user._id,
+      isEnrolled:false
+
+    })
 
     const accessToken = jwt.sign(
       {

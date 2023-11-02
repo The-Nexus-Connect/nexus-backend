@@ -1,6 +1,5 @@
 const asyncHandler = require("express-async-handler");
 const Contest = require("../models/contestModel");
-const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
