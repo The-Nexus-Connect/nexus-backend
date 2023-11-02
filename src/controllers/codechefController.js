@@ -4,10 +4,11 @@ const express = require("express");
 const app = express();
 const { JSDOM } = jsdom;
 const Codechef = require("../models/contestModels/codechefModel");
-
+const User = require("../models/userModel");
+const { get } = require("mongoose");
 
 // @desc Get codechef profile
-// @route Get api/contest/codechef/:id
+// @route Get api/contests/codechef/:id
 // @access public
 
 const getCodechefProfile = async (req, res) => {
@@ -49,50 +50,35 @@ const getCodechefProfile = async (req, res) => {
   }
 };
 
-// @desc Post codechef profile
-// @route Post api/contest/codechef/
+// @desc Update codechef profile
+// @route PUT api/contests/codechef/:id
 // @access public
-const postCodechefProfile = async (req, res) => {
+const updateCodechefProfile = async (req, res) => {
   try {
-    const codeChefData = await getCodechefProfile(req, res);
-
-    if (!codeChefData || !codeChefData.success) {
-      return res
-        .status(500)
-        .send({ success: false, error: "CodeChef data retrieval failed" });
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      res.status(404);
+      throw new Error("User not found");
     }
-
-    console.log(codeChefData);
-
-    // Modify the user identification logic based on your authentication
-    const user_id = req.user ? req.user._id : null;
-
-    // Create a new Codechef document using the Mongoose model
-    const codechefDocument = new Codechef({
-      user_id: user_id,
-      success: codeChefData.success,
-      profile: codeChefData.profile,
-      currentRating: codeChefData.currentRating,
-      highestRating: codeChefData.highestRating,
-      globalRank: codeChefData.globalRank,
-      countryRank: codeChefData.countryRank,
-      stars: codeChefData.stars,
-    });
-
-    await codechefDocument.save();
-
-    // Send a response indicating success
-    res
-      .status(200)
-      .send({ success: true, message: "CodeChef data saved successfully" });
+    const response = await axios.get(
+      "http://localhost:5001/api/contests/codechef/" + user.codechefId
+    );
+    const responseData = response.data;
+    const codechef = await Codechef.findOne({ user_id: req.params.id });
+    console.log(codechef);
+    // codechef.success = true;
+    // codechef.profile = responseData.profile;
+    // codechef.name = responseData.name;
+    // codechef.currentRating = responseData.currentRating;
+    // codechef.highestRating = responseData.highestRating;
+    // codechef.globalRank = responseData.globalRank;
+    // codechef.countryRank = responseData.countryRank;
+    // codechef.stars = responseData.stars;
+    // await codechef.save();
   } catch (err) {
     console.log(err);
-    // Send an error response
-    res.status(500).send({
-      success: false,
-      error: "Error saving CodeChef data: " + err.message,
-    });
+    res.send({ success: false, error: err });
   }
 };
 
-module.exports = { getCodechefProfile, postCodechefProfile };
+module.exports = { getCodechefProfile, updateCodechefProfile };
