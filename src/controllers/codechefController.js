@@ -3,10 +3,12 @@ const jsdom = require("jsdom");
 const express = require("express");
 const app = express();
 const { JSDOM } = jsdom;
-
+const Codechef = require("../models/contestModels/codechefModel");
+const User = require("../models/userModel");
+const { get } = require("mongoose");
 
 // @desc Get codechef profile
-// @route Get api/contest/:id/:handle
+// @route Get api/contests/codechef/:id
 // @access public
 
 const getCodechefProfile = async (req, res) => {
@@ -48,4 +50,35 @@ const getCodechefProfile = async (req, res) => {
   }
 };
 
-module.exports = { getCodechefProfile };
+// @desc Update codechef profile
+// @route PUT api/contests/codechef/:id
+// @access public
+const updateCodechefProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      res.status(404);
+      throw new Error("User not found");
+    }
+    const response = await axios.get(
+      "http://localhost:5001/api/contests/codechef/" + user.codechefId
+    );
+    const responseData = response.data;
+    const codechef = await Codechef.findOne({ user_id: req.params.id });
+    console.log(codechef);
+    // codechef.success = true;
+    // codechef.profile = responseData.profile;
+    // codechef.name = responseData.name;
+    // codechef.currentRating = responseData.currentRating;
+    // codechef.highestRating = responseData.highestRating;
+    // codechef.globalRank = responseData.globalRank;
+    // codechef.countryRank = responseData.countryRank;
+    // codechef.stars = responseData.stars;
+    // await codechef.save();
+  } catch (err) {
+    console.log(err);
+    res.send({ success: false, error: err });
+  }
+};
+
+module.exports = { getCodechefProfile, updateCodechefProfile };
