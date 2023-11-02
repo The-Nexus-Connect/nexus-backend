@@ -14,7 +14,7 @@ const codechefSchema = new mongoose.Schema(
     isEnrolled: { type: Boolean, required: true , default: false},
     success:{type:Boolean},
     profile:{type: String},
-    currentRating: { type: Number, required: true },
+    currentRating: { type: Number},
     afterRating: { type: Number },
     highestRating:{ type: Number},
     globalRank: { type: Number },
