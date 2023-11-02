@@ -6,10 +6,14 @@ const {
   postContests,
   updateContest,
 } = require("../controllers/ContestControllers");
-const { getCodechefProfile } = require("../controllers/codechefController");
+const { 
+  getCodechefProfile,
+  postCodechefProfile,
+
+} = require("../controllers/codechefController");
 
 router.route("/").get(getContests).post(postContests);
 router.route("/:id").get(getContest).put(updateContest);
-router.route("/codechef/:id").get(getCodechefProfile);
+router.route("/codechef/:id").get(getCodechefProfile).post(postCodechefProfile);
 
 module.exports = router;
