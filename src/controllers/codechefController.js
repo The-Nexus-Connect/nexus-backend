@@ -76,6 +76,8 @@ const updateCodechefProfile = async (req, res) => {
         codechef.countryRank = responseData.countryRank;
         codechef.stars = responseData.stars;
         await codechef.save();
+        user.userImg = responseData.profile;
+        await user.save();
         res.status(201).send({ success: true, data: codechef });
       } else {
         console.log("No document found");

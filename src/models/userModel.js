@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["CSE(AI)", "CSE(AIML)"],
     },
+    userImg: { type: String },
     email: { type: String, required: true },
     libId: { type: String, required: true },
     bio: { type: String },
