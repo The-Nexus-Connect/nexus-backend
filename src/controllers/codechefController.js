@@ -91,4 +91,26 @@ const updateCodechefProfile = async (req, res) => {
   }
 };
 
-module.exports = { getCodechefProfile, updateCodechefProfile };
+// @desc Enroll user
+// @route PUT api/contests/codechef/enroll/:id
+// @access public
+
+const enrollUser = async (req,res) =>{
+  try {
+    const codechefUser = await Codechef.findOne({ user_id: req.params.id });
+    if (!codechefUser) {
+      res.status(404);
+      throw new Error("User not found");
+    }
+    codechefUser.isEnrolled = true;
+    await codechefUser.save();
+    res.status(201).send({ success: true, data: codechefUser });
+   }
+   catch (error) {
+    console.error(error);
+    res.send({  error: "can't find user"});
+  }
+
+}
+
+module.exports = { getCodechefProfile, updateCodechefProfile , enrollUser};
