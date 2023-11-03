@@ -74,7 +74,7 @@ const updateCodechefProfile = async (req, res) => {
         codechef.highestRating = responseData.highestRating;
         codechef.globalRank = responseData.globalRank;
         codechef.countryRank = responseData.countryRank;
-        codechef.stars = responseData.stars;
+        codechef.stars = responseData.stars[0];
         await codechef.save();
         user.userImg = responseData.profile;
         await user.save();
