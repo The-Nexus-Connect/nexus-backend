@@ -19,7 +19,7 @@ const codechefSchema = new mongoose.Schema(
     highestRating: { type: Number },
     globalRank: { type: Number },
     countryRank: { type: Number },
-    starts: { type: Number },
+    stars: { type: Number },
   },
   {
     timestamps: true,
