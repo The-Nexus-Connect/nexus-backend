@@ -64,17 +64,25 @@ const updateCodechefProfile = async (req, res) => {
       "http://localhost:5001/api/contests/codechef/" + user.codechefId
     );
     const responseData = response.data;
-    const codechef = await Codechef.findOne({ user_id: req.params.id });
-    console.log(codechef);
-    // codechef.success = true;
-    // codechef.profile = responseData.profile;
-    // codechef.name = responseData.name;
-    // codechef.currentRating = responseData.currentRating;
-    // codechef.highestRating = responseData.highestRating;
-    // codechef.globalRank = responseData.globalRank;
-    // codechef.countryRank = responseData.countryRank;
-    // codechef.stars = responseData.stars;
-    // await codechef.save();
+    try {
+      const codechef = await Codechef.findOne({ user_id: req.params.id });
+      if (codechef) {
+        codechef.success = true;
+        codechef.profile = responseData.profile;
+        codechef.name = responseData.name;
+        codechef.currentRating = responseData.currentRating;
+        codechef.highestRating = responseData.highestRating;
+        codechef.globalRank = responseData.globalRank;
+        codechef.countryRank = responseData.countryRank;
+        codechef.stars = responseData.stars;
+        await codechef.save();
+        res.status(201).send({ success: true, data: codechef });
+      } else {
+        console.log("No document found");
+      }
+    } catch (error) {
+      console.error(error);
+    }
   } catch (err) {
     console.log(err);
     res.send({ success: false, error: err });
