@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema(
     codechefId: { type: String },
     hackerrankId: { type: String },
     leetcodeId: { type: String },
+    codeforcesId: { type: String },
     githubId: { type: String },
     password: { type: String, required: true },
     enrolledContests: [
