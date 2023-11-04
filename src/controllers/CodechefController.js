@@ -71,14 +71,15 @@ const updateCodechefProfile = async (req, res) => {
       res.status(404);
       throw new Error("User not found");
     }
-    const apiKey = process.env.API_KEY; 
+    const apiKey = process.env.API_KEY;
 
     const headers = {
       Authorization: `Bearer ${apiKey}`,
     };
 
     const response = await axios.get(
-      `${backendUrl}/api/contests/codechef/` + user.codechefId, { headers }
+      `${backendUrl}/api/contests/codechef/` + user.codechefId,
+      { headers }
     );
     const responseData = response.data;
     try {
@@ -127,12 +128,10 @@ const enrollUser = async (req, res) => {
     codechefUser.isEnrolled = true;
     await codechefUser.save();
     res.status(201).send({ success: true, data: codechefUser });
-  }
-  catch (error) {
+  } catch (error) {
     console.error(error);
     res.send({ error: "can't find user" });
   }
-
-}
+};
 
 module.exports = { getCodechefProfile, updateCodechefProfile, enrollUser };

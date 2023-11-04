@@ -10,7 +10,6 @@ const Winner = require("../models/contestModels/codechefWinnerModel");
 //@route Get /api/users
 //@access public
 const getUsers = asyncHandler(async (req, res) => {
-  
   const apiKey = req.headers.authorization;
   if (apiKey !== `Bearer ${process.env.API_KEY}`) {
     res.status(401).json({ error: "Unauthorized" });
@@ -43,7 +42,6 @@ const getUser = asyncHandler(async (req, res) => {
 //@route PUT /api/users/:id
 //@access public
 const updateUser = asyncHandler(async (req, res) => {
-
   const apiKey = req.headers.authorization;
   if (apiKey !== `Bearer ${process.env.API_KEY}`) {
     res.status(401).json({ error: "Unauthorized" });

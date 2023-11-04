@@ -1,6 +1,6 @@
 const Codechef = require("../models/contestModels/codechefModel");
 const User = require("../models/userModel");
-const Winner = require("../models/contestModels/codechefWinnerModel")
+const Winner = require("../models/contestModels/codechefWinnerModel");
 const axios = require("axios");
 const backendUrl = process.env.BACKEND_URI;
 
@@ -28,7 +28,10 @@ const startRating = async (req, res) => {
         throw new Error("User not found");
       }
 
-      const response = await axios.get(`${backendUrl}/api/contests/codechef/` + user.codechefId,{ headers });
+      const response = await axios.get(
+        `${backendUrl}/api/contests/codechef/` + user.codechefId,
+        { headers }
+      );
       const responseData = response.data;
 
       codechef.beforeRating = responseData.currentRating;
@@ -36,12 +39,9 @@ const startRating = async (req, res) => {
       res.status(201).send({ success: true, data: codechef });
     }
   } catch (error) {
-
     console.log(error);
   }
-
-
-}
+};
 
 // @desc PUT end rating
 // @route PUT /api/winner/end
@@ -52,10 +52,11 @@ const endRating = async (req, res) => {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
+
   try {
     const headers = {
-    Authorization: `Bearer ${apiKey}`,
-  };
+      Authorization: `Bearer ${apiKey}`,
+    };
 
     const userData = await axios.get(`${backendUrl}/api/users`, { headers });
 
@@ -67,21 +68,20 @@ const endRating = async (req, res) => {
         throw new Error("User not found");
       }
 
-      const response = await axios.get(`${backendUrl}/api/contests/codechef/` + user.codechefId,{ headers });
+      const response = await axios.get(
+        `${backendUrl}/api/contests/codechef/` + user.codechefId,
+        { headers }
+      );
       const responseData = response.data;
 
       codechef.afterRating = responseData.currentRating;
       await codechef.save();
       res.status(201).send({ success: true, data: codechef });
-
     }
   } catch (error) {
-
     console.log(error);
   }
-
-}
-
+};
 
 // @desc PUT calculate difference
 // @route PUT /api/winner/calculate
@@ -92,11 +92,12 @@ const calcWinner = async (req, res) => {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
+
   try {
     const headers = {
       Authorization: `Bearer ${apiKey}`,
     };
-    
+
     const userData = await axios.get(`${backendUrl}/api/users`, { headers });
     for (const user of userData.data) {
       const codechef = await Codechef.findOne({ user_id: user._id });
@@ -107,16 +108,14 @@ const calcWinner = async (req, res) => {
         throw new Error("User not found");
       }
 
-      winnerCalc.ratingDiff = (codechef.beforeRating - codechef.afterRating);
+      winnerCalc.ratingDiff = codechef.beforeRating - codechef.afterRating;
       winnerCalc.stars = codechef.stars;
       await winnerCalc.save();
       res.status(201).send({ success: true, data: winnerCalc });
-
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.log(error);
   }
-}
+};
 
 module.exports = { startRating, endRating, calcWinner };

@@ -7,7 +7,8 @@ const mongoose = require("mongoose");
 //@desc Get all Contests
 //@route Get /api/contests
 //@access public
-const getContests = asyncHandler(async (req, res) => {const apiKey = req.headers.authorization;
+const getContests = asyncHandler(async (req, res) => {
+  const apiKey = req.headers.authorization;
   if (apiKey !== `Bearer ${process.env.API_KEY}`) {
     res.status(401).json({ error: "Unauthorized" });
     return;
@@ -70,12 +71,7 @@ const postContests = asyncHandler(async (req, res) => {
     return;
   }
   try {
-    const {
-      name,
-      description,
-      startTime,
-      totalParticipant,
-    } = req.body;
+    const { name, description, startTime, totalParticipant } = req.body;
 
     // Check if the contest is already registered
 
