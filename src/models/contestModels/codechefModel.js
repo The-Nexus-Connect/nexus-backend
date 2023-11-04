@@ -15,6 +15,7 @@ const codechefSchema = new mongoose.Schema(
     success: { type: Boolean },
     profile: { type: String },
     currentRating: { type: Number },
+    beforeRating: { type: Number },
     afterRating: { type: Number },
     highestRating: { type: Number },
     globalRank: { type: Number },

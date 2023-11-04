@@ -10,7 +10,7 @@ const {
   getCodechefProfile,
   updateCodechefProfile,
   enrollUser
-} = require("../controllers/codechefController");
+} = require("../controllers/CodechefController");
 
 router.route("/").get(getContests).post(postContests);
 router.route("/:id").get(getContest).put(updateContest);
