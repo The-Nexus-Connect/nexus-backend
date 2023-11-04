@@ -10,7 +10,14 @@ const Winner = require("../models/contestModels/codechefWinnerModel");
 //@route Get /api/users
 //@access public
 const getUsers = asyncHandler(async (req, res) => {
+  
+  const apiKey = req.headers.authorization;
+  if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   const users = await User.find();
+
   res.status(200).json(users);
 });
 
@@ -18,6 +25,12 @@ const getUsers = asyncHandler(async (req, res) => {
 // @route GET /api/users/:id
 // @access public
 const getUser = asyncHandler(async (req, res) => {
+  const apiKey = req.headers.authorization;
+  if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   const user = await User.findById(req.params.id);
   if (!user) {
     res.status(404);
@@ -30,6 +43,13 @@ const getUser = asyncHandler(async (req, res) => {
 //@route PUT /api/users/:id
 //@access public
 const updateUser = asyncHandler(async (req, res) => {
+
+  const apiKey = req.headers.authorization;
+  if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   const user = await User.findById(req.params.id);
   if (!user) {
     res.status(404);
@@ -46,6 +66,11 @@ const updateUser = asyncHandler(async (req, res) => {
 //@route POST /api/users/register
 //@access public
 const registerUser = asyncHandler(async (req, res) => {
+  const apiKey = req.headers.authorization;
+  if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   try {
     const { username, branch, email, libId, bio, codechefId, password } =
       req.body;
@@ -115,6 +140,11 @@ const registerUser = asyncHandler(async (req, res) => {
 //@route POST /api/users/login
 //@access public
 const loginUser = asyncHandler(async (req, res) => {
+  const apiKey = req.headers.authorization;
+  if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   try {
     const { email, password } = req.body;
     if (!email || !password) {
