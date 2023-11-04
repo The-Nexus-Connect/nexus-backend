@@ -1,11 +1,10 @@
 const asyncHandler = require("express-async-handler");
 const User = require("../models/userModel");
-const Codechef= require("../models/contestModels/codechefModel")
+const Codechef = require("../models/contestModels/codechefModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
-const Winner = require("../models/contestModels/codechefWinnerModel")
-
+const Winner = require("../models/contestModels/codechefWinnerModel");
 
 //@desc Get all Users
 //@route Get /api/users
@@ -72,17 +71,6 @@ const registerUser = asyncHandler(async (req, res) => {
       password: hashedPassword,
     });
 
-    const codechefID = await Codechef.create({
-      user_id:user._id,
-      isEnrolled:false
-
-    })
-    const winnerID = await Winner.create({
-      user_id:user._id,
-      username:user.username
-
-    })
-
     const accessToken = jwt.sign(
       {
         user: {
@@ -101,6 +89,16 @@ const registerUser = asyncHandler(async (req, res) => {
       process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "1d" }
     );
+
+    const codechefID = await Codechef.create({
+      user_id: user._id,
+      isEnrolled: false,
+    });
+
+    const winnerID = await Winner.create({
+      user_id: user._id,
+      username: user.username,
+    });
 
     // Send a success response
     return res
