@@ -6,12 +6,18 @@ const { JSDOM } = jsdom;
 const Codechef = require("../models/contestModels/codechefModel");
 const User = require("../models/userModel");
 const { get } = require("mongoose");
+const backendUrl = process.env.BACKEND_URI;
 
 // @desc Get codechef profile
 // @route Get api/contests/codechef/:id
 // @access public
 
 const getCodechefProfile = async (req, res) => {
+  const apiKey = req.headers.authorization;
+  if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   try {
     let data = await axios.get(
       `https://www.codechef.com/users/${req.params.id}`
@@ -54,14 +60,25 @@ const getCodechefProfile = async (req, res) => {
 // @route PUT api/contests/codechef/:id
 // @access public
 const updateCodechefProfile = async (req, res) => {
+  const apiKey = req.headers.authorization;
+  if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   try {
     const user = await User.findById(req.params.id);
     if (!user) {
       res.status(404);
       throw new Error("User not found");
     }
+    const apiKey = process.env.API_KEY; 
+
+    const headers = {
+      Authorization: `Bearer ${apiKey}`,
+    };
+
     const response = await axios.get(
-      "http://localhost:5001/api/contests/codechef/" + user.codechefId
+      `${backendUrl}/api/contests/codechef/` + user.codechefId, { headers }
     );
     const responseData = response.data;
     try {
@@ -95,7 +112,12 @@ const updateCodechefProfile = async (req, res) => {
 // @route PUT api/contests/codechef/enroll/:id
 // @access public
 
-const enrollUser = async (req,res) =>{
+const enrollUser = async (req, res) => {
+  const apiKey = req.headers.authorization;
+  if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   try {
     const codechefUser = await Codechef.findOne({ user_id: req.params.id });
     if (!codechefUser) {
@@ -105,12 +127,12 @@ const enrollUser = async (req,res) =>{
     codechefUser.isEnrolled = true;
     await codechefUser.save();
     res.status(201).send({ success: true, data: codechefUser });
-   }
-   catch (error) {
+  }
+  catch (error) {
     console.error(error);
-    res.send({  error: "can't find user"});
+    res.send({ error: "can't find user" });
   }
 
 }
 
-module.exports = { getCodechefProfile, updateCodechefProfile , enrollUser};
+module.exports = { getCodechefProfile, updateCodechefProfile, enrollUser };

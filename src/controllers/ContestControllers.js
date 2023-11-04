@@ -7,7 +7,12 @@ const mongoose = require("mongoose");
 //@desc Get all Contests
 //@route Get /api/contests
 //@access public
-const getContests = asyncHandler(async (req, res) => {
+const getContests = asyncHandler(async (req, res) => {const apiKey = req.headers.authorization;
+  if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   const contests = await Contest.find();
   res.status(200).json(contests);
 });
@@ -16,6 +21,11 @@ const getContests = asyncHandler(async (req, res) => {
 // @route GET /api/contests/:id
 // @access public
 const getContest = asyncHandler(async (req, res) => {
+  const apiKey = req.headers.authorization;
+  if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   const contest = await Contest.findById(req.params.id);
   if (!contest) {
     res.status(404);
@@ -29,6 +39,11 @@ const getContest = asyncHandler(async (req, res) => {
 //@access private
 
 const updateContest = asyncHandler(async (req, res) => {
+  const apiKey = req.headers.authorization;
+  if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   const contest = await Contest.findById(req.params.id);
   if (!contest) {
     res.status(404);
@@ -49,6 +64,11 @@ const updateContest = asyncHandler(async (req, res) => {
 //@route POST /api/contests
 //@access private
 const postContests = asyncHandler(async (req, res) => {
+  const apiKey = req.headers.authorization;
+  if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   try {
     const {
       name,
