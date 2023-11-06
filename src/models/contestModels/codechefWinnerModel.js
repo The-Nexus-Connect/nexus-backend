@@ -6,8 +6,11 @@ const winnerSchema = new mongoose.Schema({
     ref: "User",
   },
   username: { type: String },
+  libId: { type: String },
+  branch: { type: String },
   ratingDiff: { type: Number },
   stars: { type: Number },
+  rank: { type: Number },
 });
 
 module.exports = mongoose.model("Winner", winnerSchema);
