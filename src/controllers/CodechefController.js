@@ -89,10 +89,14 @@ const updateCodechefProfile = async (req, res) => {
         codechef.profile = responseData.profile;
         codechef.name = responseData.name;
         codechef.currentRating = responseData.currentRating;
-        codechef.highestRating = responseData.highestRating;
-        codechef.globalRank = responseData.globalRank;
-        codechef.countryRank = responseData.countryRank;
-        codechef.stars = responseData.stars[0];
+        codechef.globalRank = responseData.globalRank || null;
+        codechef.countryRank = responseData.countryRank || null;
+        if (responseData.stars && responseData.stars.match(/\d+/)) {
+          codechef.stars = parseInt(responseData.stars.match(/\d+/)[0], 10);
+        } else {
+          codechef.stars = 1;
+        }
+
         await codechef.save();
         user.userImg = responseData.profile;
         await user.save();
@@ -134,4 +138,53 @@ const enrollUser = async (req, res) => {
   }
 };
 
-module.exports = { getCodechefProfile, updateCodechefProfile, enrollUser };
+
+// @desc rerun the codechefId datails
+// @route PUT api/contests/codechef/rating/rerun
+// @access public
+const restoreRatings = async (req, res) => {
+  const apiKey = req.headers.authorization;
+  if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  try {
+    const userData = await User.find({
+      codechefId: { $exists: true }
+    })
+    for (const user of userData) {
+      const headers = {
+        Authorization: `Bearer ${apiKey}`
+      };
+      try {
+        const response = await axios.put(
+          `${backendUrl}/api/contests/codechef/${user._id}`,
+          null,
+          {
+            headers
+          }
+        );
+
+        if (response.status === 200) {
+          console.log(response)
+        }
+      } catch (error) {
+        console.error(error);
+
+      }
+
+    }
+    const result = await Codechef.find({
+      success: true
+    })
+    res.status(201).send({ success: true, data: result });
+
+  }
+  catch (error) {
+    console.error(error);
+    res.send({ error: "can't find user" });
+  }
+
+}
+
+module.exports = { getCodechefProfile, updateCodechefProfile, enrollUser, restoreRatings };

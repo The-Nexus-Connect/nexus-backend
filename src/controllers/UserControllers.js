@@ -35,6 +35,7 @@ const getUser = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error("User not found");
   }
+  console.log(user.codechefId);
   res.status(200).json(user);
 });
 
