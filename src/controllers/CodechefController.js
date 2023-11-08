@@ -138,7 +138,6 @@ const enrollUser = async (req, res) => {
   }
 };
 
-
 // @desc rerun the codechefId datails
 // @route PUT api/contests/codechef/rating/rerun
 // @access public
@@ -150,41 +149,41 @@ const restoreRatings = async (req, res) => {
   }
   try {
     const userData = await User.find({
-      codechefId: { $exists: true }
-    })
+      codechefId: { $exists: true },
+    });
     for (const user of userData) {
       const headers = {
-        Authorization: `Bearer ${apiKey}`
+        Authorization: `Bearer ${apiKey}`,
       };
       try {
         const response = await axios.put(
           `${backendUrl}/api/contests/codechef/${user._id}`,
           null,
           {
-            headers
+            headers,
           }
         );
 
         if (response.status === 200) {
-          console.log(response)
+          console.log(response);
         }
       } catch (error) {
         console.error(error);
-
       }
-
     }
     const result = await Codechef.find({
-      success: true
-    })
+      success: true,
+    });
     res.status(201).send({ success: true, data: result });
-
-  }
-  catch (error) {
+  } catch (error) {
     console.error(error);
     res.send({ error: "can't find user" });
   }
+};
 
-}
-
-module.exports = { getCodechefProfile, updateCodechefProfile, enrollUser, restoreRatings };
+module.exports = {
+  getCodechefProfile,
+  updateCodechefProfile,
+  enrollUser,
+  restoreRatings,
+};
