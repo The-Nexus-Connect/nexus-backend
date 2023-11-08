@@ -1,4 +1,5 @@
 const Announcements = require("../models/announcementsModel");
+const asyncHandler = require("express-async-handler");
 
 //@desc Get all Announcements
 //@route Get /api/announcements
