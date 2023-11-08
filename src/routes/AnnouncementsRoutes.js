@@ -3,7 +3,9 @@ const router = express.Router();
 
 const {
     getAnnouncements,
-    postAnnouncements
+    postAnnouncements,
+    getAnnouncement,
+    updateAnnouncements,
 } = require("../controllers/AnnouncementsController");
 
 router.route("/").get(getAnnouncements).post(postAnnouncements);
