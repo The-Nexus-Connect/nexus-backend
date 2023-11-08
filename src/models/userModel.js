@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true },
     libId: { type: String, required: true },
     bio: { type: String },
+    role: { type: String, enum: ["student", "admin"], default: "student" },
     codechefId: { type: String },
     hackerrankId: { type: String },
     leetcodeId: { type: String },
@@ -22,7 +23,7 @@ const userSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: "Contest",
       },
-    ]
+    ],
   },
   {
     timestamps: true,

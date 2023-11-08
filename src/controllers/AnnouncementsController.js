@@ -4,7 +4,7 @@ const asyncHandler = require("express-async-handler");
 //@desc Get all Announcements
 //@route Get /api/announcements
 //@access public
-const getAnnouncements = async (req, res) => {
+const getAnnouncements = asyncHandler(async (req, res) => {
   const apiKey = req.headers.authorization;
   if (apiKey !== `Bearer ${process.env.API_KEY}`) {
     res.status(401).json({ error: "Unauthorized" });
@@ -17,7 +17,7 @@ const getAnnouncements = async (req, res) => {
   } catch (error) {
     console.log(error);
   }
-};
+});
 
 // @desc get Announcement
 // @route GET /api/announcements/:id
@@ -67,7 +67,7 @@ const updateAnnouncements = asyncHandler(async (req, res) => {
 //@route POST /api/anouncements
 //@access private
 
-const postAnnouncements = async (req, res) => {
+const postAnnouncements = asyncHandler(async (req, res) => {
   const apiKey = req.headers.authorization;
   if (apiKey !== `Bearer ${process.env.API_KEY}`) {
     res.status(401).json({ error: "Unauthorized" });
@@ -88,9 +88,11 @@ const postAnnouncements = async (req, res) => {
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
-};
+});
 
 module.exports = {
   getAnnouncements,
   postAnnouncements,
+  getAnnouncement,
+  updateAnnouncements,
 };
