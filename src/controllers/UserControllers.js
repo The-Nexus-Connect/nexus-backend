@@ -80,8 +80,8 @@ const registerUser = asyncHandler(async (req, res) => {
       return res.status(400).json({ error: "User already registered!" });
     }
 
-    if((email.slice(-8))!=="kiet.edu"){
-      console.log(email.slice(-8))
+    if (email.slice(-8) !== "kiet.edu") {
+      console.log(email.slice(-8));
       return res.status(504).json({ error: "User email invalid" });
     }
 
@@ -100,7 +100,6 @@ const registerUser = asyncHandler(async (req, res) => {
       password: hashedPassword,
     });
 
-    
     const accessToken = jwt.sign(
       {
         user: {
