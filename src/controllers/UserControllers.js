@@ -80,6 +80,11 @@ const registerUser = asyncHandler(async (req, res) => {
       return res.status(400).json({ error: "User already registered!" });
     }
 
+    if((email.slice(-8))!=="kiet.edu"){
+      console.log(email.slice(-8))
+      return res.status(504).json({ error: "User email invalid" });
+    }
+
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
     console.log("Hashed Password: ", hashedPassword);
@@ -95,6 +100,7 @@ const registerUser = asyncHandler(async (req, res) => {
       password: hashedPassword,
     });
 
+    
     const accessToken = jwt.sign(
       {
         user: {
@@ -114,6 +120,7 @@ const registerUser = asyncHandler(async (req, res) => {
       { expiresIn: "1d" }
     );
 
+    console.log(email.slice(-8));
     const codechefID = await Codechef.create({
       user_id: user._id,
       isEnrolled: false,
