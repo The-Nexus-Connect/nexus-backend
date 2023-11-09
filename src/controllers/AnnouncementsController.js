@@ -90,9 +90,33 @@ const postAnnouncements = asyncHandler(async (req, res) => {
   }
 });
 
+//@desc delete announcements
+//@route DELETE /api/anouncements/:id
+//@access private
+
+const deleteAnnouncements = asyncHandler(async (req, res) => {
+  const apiKey = req.headers.authorization;
+  if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  try {
+    const announcement = await Announcements.findById(req.params.id);
+    if (!announcement) {
+      res.status(404);
+      throw new Error("Announcement not found");
+    }
+    await announcement.deleteOne();
+    res.status(200).json({ message: "Announcement removed" });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 module.exports = {
   getAnnouncements,
   postAnnouncements,
   getAnnouncement,
   updateAnnouncements,
+  deleteAnnouncements,
 };
