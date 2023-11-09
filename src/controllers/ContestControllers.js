@@ -87,9 +87,31 @@ const postContests = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc delete Contest
+// @route DELETE /api/contests/:id
+// @access private
+
+const deleteContest = asyncHandler(async (req, res) => {
+  const apiKey = req.headers.authorization;
+  if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  const contest = await Contest.findById(req.params.id);
+  if (!contest) {
+    res.status(404);
+    throw new Error("Contest not found");
+  }
+  await contest.deleteOne();
+  res.status(200).json({ message: "Contest removed" });
+}
+);
+
+
 module.exports = {
   getContests,
   getContest,
   updateContest,
   postContests,
+  deleteContest,
 };

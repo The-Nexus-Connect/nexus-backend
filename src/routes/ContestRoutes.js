@@ -5,18 +5,21 @@ const {
   getContest,
   postContests,
   updateContest,
-
+  deleteContest,
 } = require("../controllers/ContestControllers");
-const { 
+const {
   getCodechefProfile,
   updateCodechefProfile,
   enrollUser,
-  restoreRatings
+  restoreRatings,
 } = require("../controllers/CodechefController");
 
 router.route("/").get(getContests).post(postContests);
-router.route("/:id").get(getContest).put(updateContest);
-router.route("/codechef/:id").get(getCodechefProfile).put(updateCodechefProfile);
+router.route("/:id").get(getContest).put(updateContest).delete(deleteContest);
+router
+  .route("/codechef/:id")
+  .get(getCodechefProfile)
+  .put(updateCodechefProfile);
 router.route("/codechef/enroll/:id").put(enrollUser);
 router.route("/codechef/rating/rerun").put(restoreRatings);
 
