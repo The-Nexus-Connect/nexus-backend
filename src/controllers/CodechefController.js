@@ -14,7 +14,6 @@ const backendUrl = process.env.BACKEND_URI;
 
 const getCodechefProfile = async (req, res) => {
   try {
-
     const apiKey = req.headers.authorization;
     if (apiKey !== `Bearer ${process.env.API_KEY}`) {
       throw new Error("Unauthorized");
@@ -54,12 +53,12 @@ const getCodechefProfile = async (req, res) => {
     );
     const stars = document.querySelector(".rating").textContent || "unrated";
 
-    const contestGlobalRank= parseInt(
+    const contestGlobalRank = parseInt(
       document.querySelector(".global-rank").innerHTML
     );
-    const contestRatingDiff=parseInt(
+    const contestRatingDiff = parseInt(
       document.querySelector(".rating-difference").innerHTML
-    )
+    );
 
     // Send success response
     res.status(200).json({
@@ -117,6 +116,8 @@ const updateCodechefProfile = async (req, res) => {
         codechef.currentRating = responseData.currentRating;
         codechef.globalRank = responseData.globalRank || null;
         codechef.countryRank = responseData.countryRank || null;
+        codechef.contestGlobalRank = responseData.contestGlobalRank || null;
+        codechef.contestRatingDiff = responseData.contestRatingDiff || null;
         if (responseData.stars && responseData.stars.match(/\d+/)) {
           codechef.stars = parseInt(responseData.stars.match(/\d+/)[0], 10);
         } else {
@@ -165,45 +166,103 @@ const enrollUser = async (req, res) => {
 };
 
 // @desc rerun the codechefId datails
-// @route PUT api/contests/codechef/rating/rerun
+// @route PUT api/contests/codechef/update/allusers
 // @access public
-const restoreRatings = async (req, res) => {
+// const restoreRatings = async (req, res) => {
+//   const apiKey = req.headers.authorization;
+
+//   if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+//     return res.status(401).json({ error: "Unauthorized" });
+//   }
+
+//   try {
+//     const userData = await User.find({ codechefId: { $exists: true } });
+
+//     const updateUserPromises = userData.map(async (user) => {
+//       try {
+//         // Make PUT request to update Codechef ratings
+//         const response = await axios.put(
+//           `${backendUrl}/api/contests/codechef/${user._id}`,
+//           null, // Replace null with your payload data if needed
+//           {
+//             headers: {
+//               Authorization: `Bearer ${apiKey}`,
+//             },
+//           }
+//         );
+
+//         // if (response.status === 200) {
+//         //   console.log(`User ${user._id} updated successfully`);
+//         // }
+//       } catch (error) {
+//         console.error(`Error updating user ${user._id}:`, error);
+//         // Continue with the next user in case of an error
+//       }
+//     });
+
+//     // Wait for all update promises to resolve
+//     await Promise.all(updateUserPromises);
+
+//     // Fetch the updated Codechef documents
+//     const updatedCodechefData = await Codechef.find({ success: true });
+
+//     res.status(201).send({ success: true, data: updatedCodechefData });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send({ error: "Internal Server Error" });
+//   }
+// };
+const updateAllCodechefProfiles = async (req, res) => {
   const apiKey = req.headers.authorization;
   if (apiKey !== `Bearer ${process.env.API_KEY}`) {
-    res.status(401).json({ error: "Unauthorized" });
-    return;
+    return res.status(401).json({ error: "Unauthorized" });
   }
+
   try {
+    const headers = {
+      Authorization: apiKey,
+    };
     const userData = await User.find({
       codechefId: { $exists: true },
     });
-    for (const user of userData) {
-      const headers = {
-        Authorization: `Bearer ${apiKey}`,
-      };
-      try {
-        const response = await axios.put(
-          `${backendUrl}/api/contests/codechef/${user._id}`,
-          null,
-          {
-            headers,
-          }
-        );
 
-        if (response.status === 200) {
-          console.log(response);
-        }
-      } catch (error) {
-        console.error(error);
+    for (const user of userData) {
+      const codechef = await Codechef.findOne({ user_id: user._id });
+
+      if (!codechef) {
+        res.status(404);
+        throw new Error("User not found");
       }
+
+      const response = await axios.get(
+        `${backendUrl}/api/contests/codechef/` + user.codechefId,
+        { headers }
+      );
+      const responseData = response.data;
+
+      let stars = 1;
+
+      if (responseData.stars && responseData.stars.match(/\d+/)) {
+        stars = parseInt(responseData.stars.match(/\d+/)[0], 10);
+      }
+
+      codechef.set({
+        currentRating: responseData.currentRating,
+        highestRating: responseData.highestRating,
+        globalRank: responseData.globalRank,
+        countryRank: responseData.countryRank,
+        stars: stars,
+        contestGlobalRank: responseData.contestGlobalRank,
+        contestRatingDiff: responseData.contestRatingDiff,
+      });
+
+      await codechef.save();
+      console.log(`stored ${user.username}`);
     }
-    const result = await Codechef.find({
-      success: true,
-    });
-    res.status(201).send({ success: true, data: result });
+    res.status(201).json({ success: true });
   } catch (error) {
     console.error(error);
-    res.send({ error: "can't find user" });
+    res.status(500).send({ error: "Internal Server Error" });
   }
 };
 
@@ -211,5 +270,5 @@ module.exports = {
   getCodechefProfile,
   updateCodechefProfile,
   enrollUser,
-  restoreRatings,
+  updateAllCodechefProfiles,
 };

@@ -1,3 +1,4 @@
+const asyncHandler = require("express-async-handler");
 const Codechef = require("../models/contestModels/codechefModel");
 const User = require("../models/userModel");
 const Winner = require("../models/contestModels/codechefWinnerModel");
@@ -137,5 +138,14 @@ const calcWinner = async (req, res) => {
     console.log(error);
   }
 };
+
+// const calcWinner = asyncHandler (async (req, res) => {
+//   const apiKey = req.headers.authorization;
+//   if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+//     res.status(401).json({ error: "Unauthorized" });
+//     return;
+//   }
+
+
 
 module.exports = { startRating, endRating, calcWinner };

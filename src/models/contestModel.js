@@ -5,7 +5,7 @@ const contestSchema = new mongoose.Schema(
     name: { type: String, required: true },
     description: { type: String },
     startTime: { type: Date },
-    contestLink:{type:String},
+    contestLink: { type: String },
     totalParticipant: { type: Number },
   },
   {
