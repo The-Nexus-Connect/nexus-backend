@@ -11,7 +11,7 @@ const {
   getCodechefProfile,
   updateCodechefProfile,
   enrollUser,
-  restoreRatings,
+  updateAllCodechefProfiles,
 } = require("../controllers/CodechefController");
 
 router.route("/").get(getContests).post(postContests);
@@ -21,8 +21,6 @@ router
   .get(getCodechefProfile)
   .put(updateCodechefProfile);
 router.route("/codechef/enroll/:id").put(enrollUser);
-router.route("/codechef/rating/rerun").put(restoreRatings);
-
-// router.route("/codechef/:id").get(getCodechefProfile).post(updateCodechefProfile);
+router.route("/codechef/update/allusers").put(updateAllCodechefProfiles);
 
 module.exports = router;

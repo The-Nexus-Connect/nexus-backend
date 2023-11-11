@@ -1,16 +1,23 @@
 const mongoose = require("mongoose");
-const winnerSchema = new mongoose.Schema({
-  user_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: "User",
+const winnerSchema = new mongoose.Schema(
+  {
+    user_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "User",
+    },
+    username: { type: String },
+    libId: { type: String },
+    branch: { type: String },
+    sec: { type: String },
+    stars: { type: Number },
+    rank: { type: Number },
+    contestGlobalRank: { type: Number },
+    contestRatingDiff: { type: Number },
   },
-  username: { type: String },
-  libId: { type: String },
-  branch: { type: String },
-  ratingDiff: { type: Number },
-  stars: { type: Number },
-  rank: { type: Number },
-});
+  {
+    timestamps: true,
+  }
+);
 
 module.exports = mongoose.model("Winner", winnerSchema);
