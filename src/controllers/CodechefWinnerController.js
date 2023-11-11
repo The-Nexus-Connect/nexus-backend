@@ -82,6 +82,12 @@ const endRating = async (req, res) => {
       );
       const responseData = response.data;
        codechef.afterRating = responseData.currentRating;
+       codechef.currentRating = responseData.currentRating;
+       if (responseData.stars && responseData.stars.match(/\d+/)) {
+        codechef.stars = parseInt(responseData.stars.match(/\d+/)[0], 10);
+      } else {
+        codechef.stars = 1;
+      }
        console.log(codechef.afterRating);
       await codechef.save();
         console.log(`stored ${user.username}`)
@@ -120,6 +126,8 @@ const calcWinner = async (req, res) => {
       winnerCalc.ratingDiff = codechef.afterRating - codechef.beforeRating;
       winnerCalc.stars = codechef.stars;
       console.log(winnerCalc.ratingDiff);
+
+
       await winnerCalc.save();
       console.log(`stored ${user.username}`)
       
