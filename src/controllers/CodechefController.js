@@ -54,6 +54,13 @@ const getCodechefProfile = async (req, res) => {
     );
     const stars = document.querySelector(".rating").textContent || "unrated";
 
+    const contestGlobalRank= parseInt(
+      document.querySelector(".global-rank").innerHTML
+    );
+    const contestRatingDiff=parseInt(
+      document.querySelector(".rating-difference").innerHTML
+    )
+
     // Send success response
     res.status(200).json({
       success: true,
@@ -66,6 +73,8 @@ const getCodechefProfile = async (req, res) => {
       globalRank,
       countryRank,
       stars,
+      contestGlobalRank,
+      contestRatingDiff,
     });
   } catch (error) {
     console.error(error);
