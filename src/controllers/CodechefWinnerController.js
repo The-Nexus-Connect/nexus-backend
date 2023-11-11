@@ -4,6 +4,7 @@ const Winner = require("../models/contestModels/codechefWinnerModel");
 const axios = require("axios");
 const backendUrl = process.env.BACKEND_URI;
 
+
 // @desc PUT start rating
 // @route PUT /api/winner/start
 // @access public
@@ -16,11 +17,13 @@ const startRating = async (req, res) => {
 
   try {
     const headers = {
-      Authorization: `Bearer ${apiKey}`,
+      Authorization: apiKey,
     };
-    const userData = await axios.get(`${backendUrl}/api/users`, { headers });
+    const userData = await User.find({
+      codechefId: { $exists: true },
+    });
 
-    for (const user of userData.data) {
+    for (const user of userData) {
       const codechef = await Codechef.findOne({ user_id: user._id });
 
       if (!codechef) {
@@ -35,13 +38,18 @@ const startRating = async (req, res) => {
       const responseData = response.data;
 
       codechef.beforeRating = responseData.currentRating;
+      console.log(codechef.beforeRating);
+     
       await codechef.save();
-      res.status(201).send({ success: true, data: codechef });
+      console.log(`stored ${user.username}`)
     }
+      res.status(201).send({ success: true});
+    
   } catch (error) {
     console.log(error);
   }
-};
+}
+
 
 // @desc PUT end rating
 // @route PUT /api/winner/end
@@ -55,31 +63,39 @@ const endRating = async (req, res) => {
 
   try {
     const headers = {
-      Authorization: `Bearer ${apiKey}`,
+      Authorization: apiKey,
     };
-
-    const userData = await axios.get(`${backendUrl}/api/users`, { headers });
-
-    for (const user of userData.data) {
+    const userData = await User.find({
+      codechefId: { $exists: true },
+    });
+    for (const user of userData){
       const codechef = await Codechef.findOne({ user_id: user._id });
-
+  
       if (!codechef) {
         res.status(404);
         throw new Error("User not found");
-      }
-
+      };
+      const url = `https://www.codechef.com/users/${user.codechefId}`;
       const response = await axios.get(
-        `${backendUrl}/api/contests/codechef/` + user.codechefId,
+        `${backendUrl}/api/contests/codechef/`+user.codechefId,
         { headers }
       );
       const responseData = response.data;
-
-      codechef.afterRating = responseData.currentRating;
+       codechef.afterRating = responseData.currentRating;
+       codechef.currentRating = responseData.currentRating;
+       if (responseData.stars && responseData.stars.match(/\d+/)) {
+        codechef.stars = parseInt(responseData.stars.match(/\d+/)[0], 10);
+      } else {
+        codechef.stars = 1;
+      }
+       console.log(codechef.afterRating);
       await codechef.save();
-      res.status(201).send({ success: true, data: codechef });
-    }
+        console.log(`stored ${user.username}`)
+     }
+      res.status(201).send({ success: true });
+    
   } catch (error) {
-    console.log(error);
+    res.status(500).json({ error: 'Internal Server Error', details: error.message });
   }
 };
 
@@ -94,12 +110,11 @@ const calcWinner = async (req, res) => {
   }
 
   try {
-    const headers = {
-      Authorization: `Bearer ${apiKey}`,
-    };
-
-    const userData = await axios.get(`${backendUrl}/api/users`, { headers });
-    for (const user of userData.data) {
+   
+    const userData = await User.find({
+      codechefId: { $exists: true },
+    });
+    for (const user of userData) {
       const codechef = await Codechef.findOne({ user_id: user._id });
       const winnerCalc = await Winner.findOne({ user_id: user._id });
 
@@ -108,11 +123,16 @@ const calcWinner = async (req, res) => {
         throw new Error("User not found");
       }
 
-      winnerCalc.ratingDiff = codechef.beforeRating - codechef.afterRating;
+      winnerCalc.ratingDiff = codechef.afterRating - codechef.beforeRating;
       winnerCalc.stars = codechef.stars;
+      console.log(winnerCalc.ratingDiff);
+
+
       await winnerCalc.save();
-      res.status(201).send({ success: true, data: winnerCalc });
+      console.log(`stored ${user.username}`)
+      
     }
+    res.status(201).send({ success: true });
   } catch (error) {
     console.log(error);
   }
