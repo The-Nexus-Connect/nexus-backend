@@ -13,46 +13,63 @@ const backendUrl = process.env.BACKEND_URI;
 // @access public
 
 const getCodechefProfile = async (req, res) => {
-  const apiKey = req.headers.authorization;
-  if (apiKey !== `Bearer ${process.env.API_KEY}`) {
-    res.status(401).json({ error: "Unauthorized" });
-    return;
-  }
   try {
-    let data = await axios.get(
+
+    const apiKey = req.headers.authorization;
+    if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+      throw new Error("Unauthorized");
+    }
+
+    const response = await axios.get(
       `https://www.codechef.com/users/${req.params.id}`
     );
-    let dom = new JSDOM(data.data);
-    let document = dom.window.document;
-    res.status(200).send({
+
+    // Parse HTML
+    const dom = new JSDOM(response.data);
+    const document = dom.window.document;
+
+    // Extract information
+    const profileImage = document.querySelector(".user-details-container")
+      .children[0].children[0].src;
+    const name = document.querySelector(".user-details-container").children[0]
+      .children[1].textContent;
+    const currentRating = parseInt(
+      document.querySelector(".rating-number").textContent
+    );
+    const highestRating = parseInt(
+      document
+        .querySelector(".rating-number")
+        .parentNode.children[4].textContent.split("Rating")[1]
+    );
+    const countryFlag = document.querySelector(".user-country-flag").src;
+    const countryName =
+      document.querySelector(".user-country-name").textContent;
+    const globalRank = parseInt(
+      document.querySelector(".rating-ranks").children[0].children[0]
+        .children[0].children[0].innerHTML
+    );
+    const countryRank = parseInt(
+      document.querySelector(".rating-ranks").children[0].children[1]
+        .children[0].children[0].innerHTML
+    );
+    const stars = document.querySelector(".rating").textContent || "unrated";
+
+    // Send success response
+    res.status(200).json({
       success: true,
-      profile: document.querySelector(".user-details-container").children[0]
-        .children[0].src,
-      name: document.querySelector(".user-details-container").children[0]
-        .children[1].textContent,
-      currentRating: parseInt(
-        document.querySelector(".rating-number").textContent
-      ),
-      highestRating: parseInt(
-        document
-          .querySelector(".rating-number")
-          .parentNode.children[4].textContent.split("Rating")[1]
-      ),
-      countryFlag: document.querySelector(".user-country-flag").src,
-      countryName: document.querySelector(".user-country-name").textContent,
-      globalRank: parseInt(
-        document.querySelector(".rating-ranks").children[0].children[0]
-          .children[0].children[0].innerHTML
-      ),
-      countryRank: parseInt(
-        document.querySelector(".rating-ranks").children[0].children[1]
-          .children[0].children[0].innerHTML
-      ),
-      stars: document.querySelector(".rating").textContent || "unrated",
+      profile: profileImage,
+      name,
+      currentRating,
+      highestRating,
+      countryFlag,
+      countryName,
+      globalRank,
+      countryRank,
+      stars,
     });
-  } catch (err) {
-    console.log(err);
-    res.send({ success: false, error: err });
+  } catch (error) {
+    console.error(error);
+    res.status(404).json({ success: false, error: error.message });
   }
 };
 
