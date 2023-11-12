@@ -15,6 +15,8 @@ const codechefSchema = new mongoose.Schema(
     success: { type: Boolean },
     name: { type: String },
     profile: { type: String },
+    beforeRating: { type: Number },
+    afterRating: { type: Number },
     currentRating: { type: Number },
     highestRating: { type: Number },
     globalRank: { type: Number },
@@ -22,6 +24,7 @@ const codechefSchema = new mongoose.Schema(
     stars: { type: Number },
     contestGlobalRank: { type: Number },
     contestRatingDiff: { type: Number },
+    contestName: { type: String },
   },
   {
     timestamps: true,

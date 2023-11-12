@@ -60,6 +60,9 @@ const getCodechefProfile = async (req, res) => {
       document.querySelector(".rating-difference").innerHTML
     );
 
+    const contestName =
+      document.querySelector(".contest-name").children[0].innerHTML;
+
     // Send success response
     res.status(200).json({
       success: true,
@@ -74,6 +77,7 @@ const getCodechefProfile = async (req, res) => {
       stars,
       contestGlobalRank,
       contestRatingDiff,
+      contestName,
     });
   } catch (error) {
     console.error(error);
@@ -114,10 +118,12 @@ const updateCodechefProfile = async (req, res) => {
         codechef.profile = responseData.profile;
         codechef.name = responseData.name;
         codechef.currentRating = responseData.currentRating;
+        codechef.highestRating = responseData.highestRating || null;
         codechef.globalRank = responseData.globalRank || null;
         codechef.countryRank = responseData.countryRank || null;
         codechef.contestGlobalRank = responseData.contestGlobalRank || null;
         codechef.contestRatingDiff = responseData.contestRatingDiff || null;
+        codechef.contestName = responseData.contestName || null;
         if (responseData.stars && responseData.stars.match(/\d+/)) {
           codechef.stars = parseInt(responseData.stars.match(/\d+/)[0], 10);
         } else {
@@ -254,7 +260,10 @@ const updateAllCodechefProfiles = async (req, res) => {
         stars: stars,
         contestGlobalRank: responseData.contestGlobalRank,
         contestRatingDiff: responseData.contestRatingDiff,
+        contestName: responseData.contestName,
       });
+
+      console.log(codechef.contestName);
 
       await codechef.save();
       console.log(`stored ${user.username}`);
