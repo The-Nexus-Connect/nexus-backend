@@ -11,9 +11,9 @@ const winnerSchema = new mongoose.Schema(
     branch: { type: String },
     sec: { type: String },
     stars: { type: Number },
-    rank: { type: Number },
     contestGlobalRank: { type: Number },
     contestRatingDiff: { type: Number },
+    contestName: { type: String },
   },
   {
     timestamps: true,

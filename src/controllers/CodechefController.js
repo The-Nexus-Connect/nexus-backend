@@ -85,6 +85,28 @@ const getCodechefProfile = async (req, res) => {
   }
 };
 
+// @desc Get codechef user from own database
+// @route Get api/contests/codechef/:id
+// @access public
+const getCodechefUser = async (req, res) => {
+  const apiKey = req.headers.authorization;
+  if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+    throw new Error("Unauthorized");
+  }
+
+  try {
+    const codechefUser = await Codechef.findOne({ user_id: req.params.id });
+    if (!codechefUser) {
+      res.status(404);
+      throw new Error("User not found");
+    }
+    res.status(200).send({ data: codechefUser });
+  } catch (error) {
+    console.error(error);
+    res.send({ error: "can't find user" });
+  }
+};
+
 // @desc Update codechef profile
 // @route PUT api/contests/codechef/:id
 // @access public
@@ -133,7 +155,7 @@ const updateCodechefProfile = async (req, res) => {
         await codechef.save();
         user.userImg = responseData.profile;
         await user.save();
-        res.status(201).send({ success: true, data: codechef });
+        res.status(200).send({ success: true, data: codechef });
       } else {
         console.log("No document found");
       }
@@ -149,7 +171,6 @@ const updateCodechefProfile = async (req, res) => {
 // @desc Enroll user
 // @route PUT api/contests/codechef/enroll/:id
 // @access public
-
 const enrollUser = async (req, res) => {
   const apiKey = req.headers.authorization;
   if (apiKey !== `Bearer ${process.env.API_KEY}`) {
@@ -164,60 +185,16 @@ const enrollUser = async (req, res) => {
     }
     codechefUser.isEnrolled = true;
     await codechefUser.save();
-    res.status(201).send({ success: true, data: codechefUser });
+    res.status(200).send({ success: true, data: codechefUser });
   } catch (error) {
     console.error(error);
     res.send({ error: "can't find user" });
   }
 };
 
-// @desc rerun the codechefId datails
+// @desc update the codechefId datails after every contests
 // @route PUT api/contests/codechef/update/allusers
 // @access public
-// const restoreRatings = async (req, res) => {
-//   const apiKey = req.headers.authorization;
-
-//   if (apiKey !== `Bearer ${process.env.API_KEY}`) {
-//     return res.status(401).json({ error: "Unauthorized" });
-//   }
-
-//   try {
-//     const userData = await User.find({ codechefId: { $exists: true } });
-
-//     const updateUserPromises = userData.map(async (user) => {
-//       try {
-//         // Make PUT request to update Codechef ratings
-//         const response = await axios.put(
-//           `${backendUrl}/api/contests/codechef/${user._id}`,
-//           null, // Replace null with your payload data if needed
-//           {
-//             headers: {
-//               Authorization: `Bearer ${apiKey}`,
-//             },
-//           }
-//         );
-
-//         // if (response.status === 200) {
-//         //   console.log(`User ${user._id} updated successfully`);
-//         // }
-//       } catch (error) {
-//         console.error(`Error updating user ${user._id}:`, error);
-//         // Continue with the next user in case of an error
-//       }
-//     });
-
-//     // Wait for all update promises to resolve
-//     await Promise.all(updateUserPromises);
-
-//     // Fetch the updated Codechef documents
-//     const updatedCodechefData = await Codechef.find({ success: true });
-
-//     res.status(201).send({ success: true, data: updatedCodechefData });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send({ error: "Internal Server Error" });
-//   }
-// };
 const updateAllCodechefProfiles = async (req, res) => {
   const apiKey = req.headers.authorization;
   if (apiKey !== `Bearer ${process.env.API_KEY}`) {
@@ -261,23 +238,65 @@ const updateAllCodechefProfiles = async (req, res) => {
         contestGlobalRank: responseData.contestGlobalRank,
         contestRatingDiff: responseData.contestRatingDiff,
         contestName: responseData.contestName,
+        profile: responseData.profile,
+        isEnrolled: false,
       });
-
-      console.log(codechef.contestName);
 
       await codechef.save();
       console.log(`stored ${user.username}`);
     }
-    res.status(201).json({ success: true });
+    res.status(200).json({ success: true });
   } catch (error) {
     console.error(error);
     res.status(500).send({ error: "Internal Server Error" });
   }
 };
 
+// @desc generate all winners
+// @route PUT api/contests/codechef/generate/allwinners/:contestName
+// @access public
+const generateWinners = async (req, res) => {
+  const apiKey = req.headers.authorization;
+  if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  try {
+    const searchQuery = req.params.contestName;
+
+    const partialMatchParticipants = await Codechef.find({
+      contestName: { $regex: new RegExp(searchQuery, "i") },
+      success: true,
+      // isEnrolled: true,
+    })
+      .select("_id contestName stars contestGlobalRank contestRatingDiff")
+      .populate("user_id", "username libId branch sec codechefId rollNo");
+
+    const exactMatchParticipants = await Codechef.find({
+      contestName: searchQuery,
+      success: true,
+    }).select("-_id user_id");
+
+    const allParticipantsSet = new Set([
+      ...partialMatchParticipants,
+      ...exactMatchParticipants,
+    ]);
+    const allParticipants = [...allParticipantsSet];
+    allParticipants.sort((a, b) => a.contestGlobalRank - b.contestGlobalRank);
+
+    res.status(200).json(allParticipants);
+  } catch (error) {
+    console.error("Error retrieving contest participants:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   getCodechefProfile,
+  getCodechefUser,
   updateCodechefProfile,
   enrollUser,
   updateAllCodechefProfiles,
+  generateWinners,
 };

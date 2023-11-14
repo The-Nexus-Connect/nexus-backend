@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema(
     libId: { type: String, required: true },
     bio: { type: String },
     sec: { type: String, enum: ["A", "B", "C", "D", "E", "F", "G", "H"] },
+    rollNo: { type: Number, required: true },
     role: { type: String, enum: ["student", "admin"], default: "student" },
     codechefId: { type: String },
     hackerrankId: { type: String },

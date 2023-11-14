@@ -8,6 +8,6 @@ const {
 
 router.route("/start").put(startRating);
 router.route("/end").put(endRating);
-router.route("/calculate").put(calcWinner);
+router.route("/calculate/:contestName").get(calcWinner);
 
 module.exports = router;

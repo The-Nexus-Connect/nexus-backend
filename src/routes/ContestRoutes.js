@@ -9,9 +9,11 @@ const {
 } = require("../controllers/ContestControllers");
 const {
   getCodechefProfile,
+  getCodechefUser,
   updateCodechefProfile,
   enrollUser,
   updateAllCodechefProfiles,
+  generateWinners,
 } = require("../controllers/CodechefController");
 
 router.route("/").get(getContests).post(postContests);
@@ -21,6 +23,8 @@ router
   .get(getCodechefProfile)
   .put(updateCodechefProfile);
 router.route("/codechef/enroll/:id").put(enrollUser);
+router.route("/codechef/getuser/:id").get(getCodechefUser);
 router.route("/codechef/update/allusers").put(updateAllCodechefProfiles);
+router.route("/codechef/generate/allwinners/:contestName").get(generateWinners);
 
 module.exports = router;
