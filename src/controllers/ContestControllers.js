@@ -71,11 +71,12 @@ const postContests = asyncHandler(async (req, res) => {
     return;
   }
   try {
-    const { name, description, startTime, totalParticipant } = req.body;
+    const { platform, name, description, startTime, totalParticipant } = req.body;
 
     // Check if the contest is already registered
 
     const contest = await Contest.create({
+      platform,
       name,
       description,
       startTime,

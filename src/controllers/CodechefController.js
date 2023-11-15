@@ -253,7 +253,7 @@ const updateAllCodechefProfiles = async (req, res) => {
 };
 
 // @desc generate all winners
-// @route PUT api/contests/codechef/generate/allwinners/:contestName
+// @route GET api/contests/codechef/generate/allwinners/:contestName
 // @access public
 const generateWinners = async (req, res) => {
   const apiKey = req.headers.authorization;
