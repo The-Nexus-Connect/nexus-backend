@@ -6,6 +6,7 @@ const { JSDOM } = jsdom;
 const Codechef = require("../models/contestModels/codechefModel");
 const User = require("../models/userModel");
 const { get } = require("mongoose");
+const codechefWinnersModel = require("../models/contestModels/codechefWinnersModel");
 const backendUrl = process.env.BACKEND_URI;
 
 // @desc Get codechef profile
@@ -255,6 +256,43 @@ const updateAllCodechefProfiles = async (req, res) => {
 // @desc generate all winners
 // @route GET api/contests/codechef/generate/allwinners/:contestName
 // @access public
+// const generateWinners = async (req, res) => {
+//   const apiKey = req.headers.authorization;
+//   if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+//     res.status(401).json({ error: "Unauthorized" });
+//     return;
+//   }
+
+//   try {
+//     const searchQuery = req.params.contestName;
+
+//     const partialMatchParticipants = await Codechef.find({
+//       contestName: { $regex: new RegExp(searchQuery, "i") },
+//       success: true,
+//       // isEnrolled: true,
+//     })
+//       .select("_id contestName stars contestGlobalRank contestRatingDiff")
+//       .populate("user_id", "username libId branch section codechefId rollNo");
+
+//     const exactMatchParticipants = await Codechef.find({
+//       contestName: searchQuery,
+//       success: true,
+//     }).select("-_id user_id");
+
+//     const allParticipantsSet = new Set([
+//       ...partialMatchParticipants,
+//       ...exactMatchParticipants,
+//     ]);
+//     const allParticipants = [...allParticipantsSet];
+//     allParticipants.sort((a, b) => a.contestGlobalRank - b.contestGlobalRank);
+
+//     res.status(200).json(allParticipants);
+//   } catch (error) {
+//     console.error("Error retrieving contest participants:", error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// };
+
 const generateWinners = async (req, res) => {
   const apiKey = req.headers.authorization;
   if (apiKey !== `Bearer ${process.env.API_KEY}`) {
@@ -268,10 +306,9 @@ const generateWinners = async (req, res) => {
     const partialMatchParticipants = await Codechef.find({
       contestName: { $regex: new RegExp(searchQuery, "i") },
       success: true,
-      // isEnrolled: true,
     })
       .select("_id contestName stars contestGlobalRank contestRatingDiff")
-      .populate("user_id", "username libId branch sec codechefId rollNo");
+      .populate("user_id", "username libId branch section codechefId rollNo");
 
     const exactMatchParticipants = await Codechef.find({
       contestName: searchQuery,
@@ -285,7 +322,37 @@ const generateWinners = async (req, res) => {
     const allParticipants = [...allParticipantsSet];
     allParticipants.sort((a, b) => a.contestGlobalRank - b.contestGlobalRank);
 
-    res.status(200).json(allParticipants);
+    const winnersData = allParticipants.map((participant) => ({
+      user_id: participant.user_id._id,
+      username: participant.user_id.username,
+      branch: participant.user_id.branch,
+      libId: participant.user_id.libId,
+      section: participant.user_id.section,
+      rollNo: participant.user_id.rollNo,
+      codechefId: participant.user_id.codechefId,
+      contestName: participant.contestName,
+      contestGlobalRank: participant.contestGlobalRank,
+      contestRatingDiff: participant.contestRatingDiff,
+      stars: participant.stars,
+    }));
+
+    const existingContest = await codechefWinnersModel.findOne({
+      contestName: searchQuery,
+    });
+
+    if (existingContest) {
+      existingContest.winners.push(...winnersData);
+      console.log(existingContest.winners);
+      await existingContest.save();
+    } else {
+      // Create a new CodechefWinners document
+      await codechefWinnersModel.create({
+        contestName: searchQuery,
+        winners: winnersData,
+      });
+    }
+
+    res.status(200).json({ success: true, data: winnersData });
   } catch (error) {
     console.error("Error retrieving contest participants:", error);
     res.status(500).json({ error: "Internal Server Error" });

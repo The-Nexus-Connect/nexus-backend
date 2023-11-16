@@ -4,7 +4,6 @@ const Codechef = require("../models/contestModels/codechefModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
-const Winner = require("../models/contestModels/codechefWinnerModel");
 
 //@desc Get all Users
 //@route Get /api/users
@@ -35,7 +34,6 @@ const getUser = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error("User not found");
   }
-  console.log(user.codechefId);
   res.status(200).json(user);
 });
 
@@ -71,8 +69,17 @@ const registerUser = asyncHandler(async (req, res) => {
     return;
   }
   try {
-    const { username, branch, email, libId, bio, codechefId, password } =
-      req.body;
+    const {
+      username,
+      branch,
+      email,
+      libId,
+      bio,
+      codechefId,
+      password,
+      rollNo,
+      section,
+    } = req.body;
 
     // Check if the user is already registered
     const userAvailable = await User.findOne({ email });
@@ -94,6 +101,8 @@ const registerUser = asyncHandler(async (req, res) => {
       username,
       branch,
       email,
+      rollNo,
+      section,
       libId,
       bio,
       codechefId,
@@ -123,11 +132,6 @@ const registerUser = asyncHandler(async (req, res) => {
     const codechefID = await Codechef.create({
       user_id: user._id,
       isEnrolled: false,
-    });
-
-    const winnerID = await Winner.create({
-      user_id: user._id,
-      username: user.username,
     });
 
     // Send a success response
