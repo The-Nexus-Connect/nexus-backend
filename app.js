@@ -19,7 +19,6 @@ app.use(express.json());
 
 app.use("/api/users", require("./src/routes/UserRoutes"));
 app.use("/api/contests", require("./src/routes/ContestRoutes"));
-// app.use("/api/winner", require("./src/routes/CodechefWinnerRoutes"));
 app.use("/api/announcements", require("./src/routes/AnnouncementsRoutes"));
 
 app.listen(port, () => {
