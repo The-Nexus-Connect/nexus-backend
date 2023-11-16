@@ -256,43 +256,6 @@ const updateAllCodechefProfiles = async (req, res) => {
 // @desc generate all winners
 // @route GET api/contests/codechef/generate/allwinners/:contestName
 // @access public
-// const generateWinners = async (req, res) => {
-//   const apiKey = req.headers.authorization;
-//   if (apiKey !== `Bearer ${process.env.API_KEY}`) {
-//     res.status(401).json({ error: "Unauthorized" });
-//     return;
-//   }
-
-//   try {
-//     const searchQuery = req.params.contestName;
-
-//     const partialMatchParticipants = await Codechef.find({
-//       contestName: { $regex: new RegExp(searchQuery, "i") },
-//       success: true,
-//       // isEnrolled: true,
-//     })
-//       .select("_id contestName stars contestGlobalRank contestRatingDiff")
-//       .populate("user_id", "username libId branch section codechefId rollNo");
-
-//     const exactMatchParticipants = await Codechef.find({
-//       contestName: searchQuery,
-//       success: true,
-//     }).select("-_id user_id");
-
-//     const allParticipantsSet = new Set([
-//       ...partialMatchParticipants,
-//       ...exactMatchParticipants,
-//     ]);
-//     const allParticipants = [...allParticipantsSet];
-//     allParticipants.sort((a, b) => a.contestGlobalRank - b.contestGlobalRank);
-
-//     res.status(200).json(allParticipants);
-//   } catch (error) {
-//     console.error("Error retrieving contest participants:", error);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// };
-
 const generateWinners = async (req, res) => {
   const apiKey = req.headers.authorization;
   if (apiKey !== `Bearer ${process.env.API_KEY}`) {
@@ -359,6 +322,59 @@ const generateWinners = async (req, res) => {
   }
 };
 
+// @desc Get all winners by contest name
+// @route GET api/contests/codechef/get/allwinners/:contestName
+// @access public
+const getContestsAllWinners = async (req, res) => {
+  const apiKey = req.headers.authorization;
+  if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  try {
+    const contestName = req.params.contestName;
+    const contestWinners = await codechefWinnersModel.findOne({
+      contestName: new RegExp(contestName, "i"),
+    });
+
+    if (!contestWinners) {
+      res.status(404);
+      throw new Error("Contest not found");
+    }
+
+    res.status(200).json({ success: true, data: contestWinners });
+  } catch (error) {
+    console.error("Error retrieving contest winners:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+// @desc Get all winners
+// @route GET api/contests/codechef/get/allwinners
+// @access public
+const getAllWinners = async (req, res) => {
+  const apiKey = req.headers.authorization;
+  if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  try {
+    const contestWinners = await codechefWinnersModel.find();
+
+    if (!contestWinners) {
+      res.status(404);
+      throw new Error("Contest not found");
+    }
+
+    res.status(200).json({ success: true, data: contestWinners });
+  } catch (error) {
+    console.error("Error retrieving contest winners:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   getCodechefProfile,
   getCodechefUser,
@@ -366,4 +382,6 @@ module.exports = {
   enrollUser,
   updateAllCodechefProfiles,
   generateWinners,
+  getAllWinners,
+  getContestsAllWinners,
 };
