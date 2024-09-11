@@ -6,13 +6,6 @@
 
 This is a backend repository of Nexus-project, that provides a platform where students can connect, share, collaborate, and engage with various coding contests.
 
-## Features
-
-- 
-- 
-- 
-- 
-
 ## Technologies Used
 
 - Node.js
