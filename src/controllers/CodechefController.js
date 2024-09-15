@@ -81,7 +81,9 @@ const getCodechefProfile = async (req, res) => {
       contestName,
     });
   } catch (error) {
-    console.error(error);
+    if (error.response && error.response.status === 404) {
+      console.log(`Profile not found for user id: ${req.params.id}`);
+    }
     res.status(404).json({ success: false, error: error.message });
   }
 };
@@ -218,33 +220,40 @@ const updateAllCodechefProfiles = async (req, res) => {
         throw new Error("User not found");
       }
 
-      const response = await axios.get(
-        `${backendUrl}/api/contests/codechef/` + user.codechefId,
-        { headers }
-      );
-      const responseData = response.data;
+      try {
+        const response = await axios.get(
+          `${backendUrl}/api/contests/codechef/` + user.codechefId,
+          { headers }
+        );
+        const responseData = response.data;
 
-      let stars = 1;
+        let stars = 1;
 
-      if (responseData.stars && responseData.stars.match(/\d+/)) {
-        stars = parseInt(responseData.stars.match(/\d+/)[0], 10);
+        if (responseData.stars && responseData.stars.match(/\d+/)) {
+          stars = parseInt(responseData.stars.match(/\d+/)[0], 10);
+        }
+
+        codechef.set({
+          currentRating: responseData.currentRating,
+          highestRating: responseData.highestRating,
+          globalRank: responseData.globalRank,
+          countryRank: responseData.countryRank,
+          stars: stars,
+          contestGlobalRank: responseData.contestGlobalRank,
+          contestRatingDiff: responseData.contestRatingDiff,
+          contestName: responseData.contestName,
+          profile: responseData.profile,
+          isEnrolled: false,
+        });
+
+        await codechef.save();
+        console.log(`stored ${user.username}`);
+      } catch (error) {
+        if (error.response && error.response.status === 404) {
+          continue;
+        }
+        console.error(error);
       }
-
-      codechef.set({
-        currentRating: responseData.currentRating,
-        highestRating: responseData.highestRating,
-        globalRank: responseData.globalRank,
-        countryRank: responseData.countryRank,
-        stars: stars,
-        contestGlobalRank: responseData.contestGlobalRank,
-        contestRatingDiff: responseData.contestRatingDiff,
-        contestName: responseData.contestName,
-        profile: responseData.profile,
-        isEnrolled: false,
-      });
-
-      await codechef.save();
-      console.log(`stored ${user.username}`);
     }
     res.status(200).json({ success: true });
   } catch (error) {
