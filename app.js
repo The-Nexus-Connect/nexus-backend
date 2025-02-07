@@ -10,7 +10,7 @@ connectDb();
 
 app.use(
   cors({
-    origin: frontendUrl,
+    origin: '*',
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
   })
