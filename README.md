@@ -1,6 +1,6 @@
 # Nexus
 
-##### Connect, Collaborate, and Thrive Together.
+##### Connect, Collaborate and Thrive Together.
 
 ## Description
 
@@ -21,7 +21,7 @@ This is a backend repository of Nexus-project, that provides a platform where st
 
 ### Installation
 
-- Clone the repository: `git clone https://github.com/the-nexus-point/nexus-backend.git`
+- Clone the repository: `git clone https://github.com/priyanshverma444/nexus-backend.git`
 - Install dependencies: `npm install`
 - Set up environment variables:
   - Create a `.env` file in the project root directory.
