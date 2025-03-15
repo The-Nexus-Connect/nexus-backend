@@ -79,6 +79,7 @@ const registerUser = asyncHandler(async (req, res) => {
       password,
       rollNo,
       section,
+      userImage,
     } = req.body;
 
     // Check if the user is already registered
@@ -107,6 +108,7 @@ const registerUser = asyncHandler(async (req, res) => {
       bio,
       codechefId,
       password: hashedPassword,
+      userImage,
     });
 
     const accessToken = jwt.sign(
@@ -122,6 +124,7 @@ const registerUser = asyncHandler(async (req, res) => {
           hackerrankId: user.hackerrankId,
           leetcodeId: user.leetcodeId,
           githubId: user.githubId,
+          userImage : user.userImage,
         },
       },
       process.env.ACCESS_TOKEN_SECRET,
@@ -176,6 +179,7 @@ const loginUser = asyncHandler(async (req, res) => {
             hackerrankId: user.hackerrankId,
             leetcodeId: user.leetcodeId,
             githubId: user.githubId,
+            userImage : user.userImage,
           },
         },
         process.env.ACCESS_TOKEN_SECRET,
@@ -191,10 +195,27 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 });
 
+const updateUserImage = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.userImage = `/uploads/${req.file.filename}`;
+    await user.save();
+
+    res.status(200).json({ userImage: user.userImage });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
   getUsers,
   getUser,
   updateUser,
+  updateUserImage,
 };

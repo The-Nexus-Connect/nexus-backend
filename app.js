@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const connectDb = require("./config/dbConnection");
 const dotenv = require("dotenv").config();
+const path = require('path');
 
 const app = express();
 const port = process.env.PORT || 5001;
@@ -20,6 +21,9 @@ app.use(express.json());
 app.use("/api/users", require("./src/routes/UserRoutes"));
 app.use("/api/contests", require("./src/routes/ContestRoutes"));
 app.use("/api/announcements", require("./src/routes/AnnouncementsRoutes"));
+
+// Serve static files from the uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.listen(port, () => {
   console.log(`Server is running at port ${port}`);
