@@ -271,7 +271,7 @@ const generateWinners = async (req, res) => {
       success: true,
     })
       .select("_id contestName stars contestGlobalRank contestRatingDiff")
-      .populate("user_id", "username libId branch section codechefId rollNo");
+      .populate("user_id", "username libId branch section codechefId rollNo userImage");
 
     const exactMatchParticipants = await Codechef.find({
       contestName: searchQuery,
@@ -292,6 +292,7 @@ const generateWinners = async (req, res) => {
       libId: participant.user_id.libId,
       section: participant.user_id.section,
       rollNo: participant.user_id.rollNo,
+      userImage: participant.user_id.userImage,
       codechefId: participant.user_id.codechefId,
       contestName: participant.contestName,
       contestGlobalRank: participant.contestGlobalRank,
