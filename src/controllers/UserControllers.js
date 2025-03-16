@@ -156,45 +156,52 @@ const registerUser = asyncHandler(async (req, res) => {
 //@access public
 const loginUser = asyncHandler(async (req, res) => {
   const apiKey = req.headers.authorization;
+
   if (apiKey !== `Bearer ${process.env.API_KEY}`) {
-    res.status(401).json({ error: "Unauthorized" });
-    return;
+    return res.status(401).json({ error: "Unauthorized" });
   }
+
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      res.status(400);
-      throw new Error("All fields are mandatory!");
+      return res.status(400).json({ error: "All fields are mandatory!" });
     }
+
     const user = await User.findOne({ email });
 
-    if (user && (await bcrypt.compare(password, user.password))) {
-      const accessToken = jwt.sign(
-        {
-          user: {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            bio: user.bio,
-            branch: user.branch,
-            libId: user.libId,
-            codechefId: user.codechefId,
-            hackerrankId: user.hackerrankId,
-            leetcodeId: user.leetcodeId,
-            githubId: user.githubId,
-            userImage : user.userImage,
-          },
-        },
-        process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "1d" }
-      );
-      res.status(200).json({ accessToken });
-    } else {
-      res.status(401);
-      throw new Error("email or password is not valid");
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
     }
+
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ error: "Incorrect password" });
+    }
+
+    const accessToken = jwt.sign(
+      {
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          bio: user.bio,
+          branch: user.branch,
+          libId: user.libId,
+          codechefId: user.codechefId,
+          hackerrankId: user.hackerrankId,
+          leetcodeId: user.leetcodeId,
+          githubId: user.githubId,
+          userImage: user.userImage,
+        },
+      },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    res.status(200).json({ accessToken });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Login Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
