@@ -88,12 +88,12 @@ const registerUser = asyncHandler(async (req, res) => {
     // Check if the user is already registered
     const userAvailable = await User.findOne({ email });
     if (userAvailable) {
-      return res.status(400).json({ error: "User already registered!" });
+      return res.status(409).json({ error: "User already registered!" }); // Return 409 Conflict
     }
 
     if (email.slice(-8) !== "kiet.edu") {
       console.log(email.slice(-8));
-      return res.status(504).json({ error: "User email invalid" });
+      return res.status(400).json({ error: "User email invalid" }); // Return 400 Bad Request
     }
 
     // Hash the password
@@ -127,7 +127,7 @@ const registerUser = asyncHandler(async (req, res) => {
           hackerrankId: user.hackerrankId,
           leetcodeId: user.leetcodeId,
           githubId: user.githubId,
-          userImage : user.userImage,
+          userImage: user.userImage,
         },
       },
       process.env.ACCESS_TOKEN_SECRET,
@@ -238,7 +238,6 @@ const updateUserImage = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
-
 
 // @desc Forgot Password
 // @route POST /api/users/forgot-password
