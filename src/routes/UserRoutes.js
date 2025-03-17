@@ -10,18 +10,18 @@ const {
   forgotPassword,
   resetPassword,
 } = require("../controllers/UserControllers");
-
-const upload = require('../../middlewares/uploadMiddleware');
+const multer = require('multer');
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 router.route("/").get(getUsers);
 router.route("/:id").get(getUser).put(updateUser);
 router.route("/login").post(loginUser);
 router.route("/register").post(registerUser);
 
-// Route to handle image upload
-router.put('/upload/:id', upload, updateUserImage);
-
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password/:token', resetPassword);
+
+router.put('/upload/:id', upload.single('image'), updateUserImage);
 
 module.exports = router;
