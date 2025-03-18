@@ -88,12 +88,12 @@ const registerUser = asyncHandler(async (req, res) => {
     // Check if the user is already registered
     const userAvailable = await User.findOne({ email });
     if (userAvailable) {
-      return res.status(409).json({ error: "User already registered!" }); // Return 409 Conflict
+      return res.status(409).json({ error: "User already registered!" }); 
     }
 
     if (email.slice(-8) !== "kiet.edu") {
       console.log(email.slice(-8));
-      return res.status(400).json({ error: "User email invalid" }); // Return 400 Bad Request
+      return res.status(504).json({ error: "User email invalid" }); 
     }
 
     // Hash the password
