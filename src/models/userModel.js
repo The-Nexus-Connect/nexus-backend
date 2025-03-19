@@ -20,6 +20,7 @@ const userSchema = new mongoose.Schema(
     codeforcesId: { type: String },
     githubId: { type: String },
     userImage: { type: String },
+    yearOfStudy: { type: Number },
     password: { type: String, required: true },
     enrolledContests: [
       {

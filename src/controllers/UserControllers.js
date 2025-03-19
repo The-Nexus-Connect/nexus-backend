@@ -83,6 +83,7 @@ const registerUser = asyncHandler(async (req, res) => {
       rollNo,
       section,
       userImage,
+      yearOfStudy,
     } = req.body;
 
     // Check if the user is already registered
@@ -112,6 +113,7 @@ const registerUser = asyncHandler(async (req, res) => {
       codechefId,
       password: hashedPassword,
       userImage,
+      yearOfStudy,
     });
 
     const accessToken = jwt.sign(
@@ -128,6 +130,7 @@ const registerUser = asyncHandler(async (req, res) => {
           leetcodeId: user.leetcodeId,
           githubId: user.githubId,
           userImage: user.userImage,
+          yearOfStudy: user.yearOfStudy,
         },
       },
       process.env.ACCESS_TOKEN_SECRET,
@@ -192,6 +195,7 @@ const loginUser = asyncHandler(async (req, res) => {
           leetcodeId: user.leetcodeId,
           githubId: user.githubId,
           userImage: user.userImage,
+          yearOfStudy: user.yearOfStudy,
         },
       },
       process.env.ACCESS_TOKEN_SECRET,
