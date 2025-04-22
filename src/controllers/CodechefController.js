@@ -9,60 +9,93 @@ const { get } = require("mongoose");
 const codechefWinnersModel = require("../models/contestModels/codechefWinnersModel");
 const backendUrl = process.env.BACKEND_URI;
 
+// Helper function for delay between requests
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+// Configure axios instance for CodeChef with rate limiting
+const codechefAxios = axios.create({
+  baseURL: 'https://www.codechef.com',
+  headers: {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+  },
+  timeout: 10000
+});
+
+// Retry wrapper for axios requests
+async function retryRequest(url, retries = 3, delayMs = 3000) {
+  try {
+    await delay(delayMs);
+    const response = await codechefAxios.get(url);
+    return response;
+  } catch (error) {
+    if (retries <= 0) throw error;
+    
+    if (error.response && error.response.status === 429) {
+      console.log(`Rate limited. Retrying in ${delayMs}ms... (${retries} retries left)`);
+      return retryRequest(url, retries - 1, delayMs * 2); // Exponential backoff
+    }
+    throw error;
+  }
+}
+
 // @desc Get codechef profile
 // @route Get api/contests/codechef/:id
 // @access public
-
 const getCodechefProfile = async (req, res) => {
   try {
     const apiKey = req.headers.authorization;
     if (apiKey !== `Bearer ${process.env.API_KEY}`) {
-      throw new Error("Unauthorized");
+      return res.status(401).json({ success: false, error: "Unauthorized" });
     }
 
-    const response = await axios.get(
-      `https://www.codechef.com/users/${req.params.id}`
-    );
+    const response = await retryRequest(`/users/${req.params.id}`);
 
     // Parse HTML
     const dom = new JSDOM(response.data);
     const document = dom.window.document;
 
-    // Extract information
-    const profileImage = document.querySelector(".user-details-container")
-      .children[0].children[0].src;
-    const name = document.querySelector(".user-details-container").children[0]
-      .children[1].textContent;
-    const currentRating = parseInt(
-      document.querySelector(".rating-number").textContent
-    );
-    const highestRating = parseInt(
-      document
-        .querySelector(".rating-number")
-        .parentNode.children[4].textContent.split("Rating")[1]
-    );
-    const countryFlag = document.querySelector(".user-country-flag").src;
-    const countryName =
-      document.querySelector(".user-country-name").textContent;
-    const globalRank = parseInt(
-      document.querySelector(".rating-ranks").children[0].children[0]
-        .children[0].children[0].innerHTML
-    );
-    const countryRank = parseInt(
-      document.querySelector(".rating-ranks").children[0].children[1]
-        .children[0].children[0].innerHTML
-    );
-    const stars = document.querySelector(".rating").textContent || "unrated";
+    // Check if we got a challenge page
+    const challengeTitle = document.querySelector('title');
+    if (challengeTitle && challengeTitle.textContent.includes('Just a moment')) {
+      throw new Error('Cloudflare challenge detected. Please try again later.');
+    }
 
-    const contestGlobalRank = parseInt(
-      document.querySelector(".global-rank").innerHTML
-    );
-    const contestRatingDiff = parseInt(
-      document.querySelector(".rating-difference").innerHTML
-    );
+    // Extract information with proper error handling
+    const getUserDetail = (selector, attribute = 'textContent') => {
+      const element = document.querySelector(selector);
+      return element ? (attribute === 'textContent' ? element.textContent.trim() : element[attribute]) : null;
+    };
 
-    const contestName =
-      document.querySelector(".contest-name").children[0].innerHTML;
+    const profileImage = getUserDetail('.user-details-container img', 'src');
+    const name = getUserDetail('.user-details-container h1');
+    
+    const ratingNumber = getUserDetail('.rating-number');
+    const currentRating = ratingNumber ? parseInt(ratingNumber) : null;
+    
+    const highestRatingText = getUserDetail('.rating-number')?.parentNode?.children[4]?.textContent;
+    const highestRating = highestRatingText ? parseInt(highestRatingText.split("Rating")[1]) : null;
+    
+    const countryFlag = getUserDetail('.user-country-flag', 'src');
+    const countryName = getUserDetail('.user-country-name');
+    
+    const globalRankElement = document.querySelector('.rating-ranks li:nth-child(1) a');
+    const globalRank = globalRankElement ? parseInt(globalRankElement.textContent) : null;
+    
+    const countryRankElement = document.querySelector('.rating-ranks li:nth-child(2) a');
+    const countryRank = countryRankElement ? parseInt(countryRankElement.textContent) : null;
+    
+    const stars = getUserDetail('.rating') || 'unrated';
+    
+    const contestGlobalRankElement = document.querySelector('.global-rank');
+    const contestGlobalRank = contestGlobalRankElement ? parseInt(contestGlobalRankElement.textContent) : null;
+    
+    const contestRatingDiffElement = document.querySelector('.rating-difference');
+    const contestRatingDiff = contestRatingDiffElement ? parseInt(contestRatingDiffElement.textContent) : null;
+    
+    const contestNameElement = document.querySelector('.contest-name a');
+    const contestName = contestNameElement ? contestNameElement.textContent.trim() : null;
 
     // Send success response
     res.status(200).json({
@@ -81,8 +114,13 @@ const getCodechefProfile = async (req, res) => {
       contestName,
     });
   } catch (error) {
-    console.error(error);
-    res.status(404).json({ success: false, error: error.message });
+    console.error('Error in getCodechefProfile:', error);
+    const statusCode = error.message.includes('Unauthorized') ? 401 : 
+                      error.message.includes('Cloudflare') ? 429 : 404;
+    res.status(statusCode).json({ 
+      success: false, 
+      error: error.message || 'Failed to fetch CodeChef profile' 
+    });
   }
 };
 
@@ -90,21 +128,23 @@ const getCodechefProfile = async (req, res) => {
 // @route Get api/contests/codechef/:id
 // @access public
 const getCodechefUser = async (req, res) => {
-  const apiKey = req.headers.authorization;
-  if (apiKey !== `Bearer ${process.env.API_KEY}`) {
-    throw new Error("Unauthorized");
-  }
-
   try {
+    const apiKey = req.headers.authorization;
+    if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
     const codechefUser = await Codechef.findOne({ user_id: req.params.id });
     if (!codechefUser) {
-      res.status(404);
-      throw new Error("User not found");
+      return res.status(404).json({ error: "User not found" });
     }
-    res.status(200).send({ data: codechefUser });
+    res.status(200).json({ success: true, data: codechefUser });
   } catch (error) {
-    console.error(error);
-    res.send({ error: "can't find user" });
+    console.error('Error in getCodechefUser:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message || "Internal server error" 
+    });
   }
 };
 
@@ -112,60 +152,78 @@ const getCodechefUser = async (req, res) => {
 // @route PUT api/contests/codechef/:id
 // @access public
 const updateCodechefProfile = async (req, res) => {
-  const apiKey = req.headers.authorization;
-  if (apiKey !== `Bearer ${process.env.API_KEY}`) {
-    res.status(401).json({ error: "Unauthorized" });
-    return;
-  }
   try {
+    const apiKey = req.headers.authorization;
+    if (apiKey !== `Bearer ${process.env.API_KEY}`) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
     const user = await User.findById(req.params.id);
     if (!user) {
-      res.status(404);
-      throw new Error("User not found");
+      return res.status(404).json({ error: "User not found" });
     }
-    const apiKey = process.env.API_KEY;
 
-    const headers = {
-      Authorization: `Bearer ${apiKey}`,
-    };
+    if (!user.codechefId) {
+      return res.status(400).json({ error: "CodeChef ID not set for this user" });
+    }
 
-    const response = await axios.get(
-      `${backendUrl}/api/contests/codechef/` + user.codechefId,
-      { headers }
-    );
-    const responseData = response.data;
     try {
-      const codechef = await Codechef.findOne({ user_id: req.params.id });
-      if (codechef) {
-        codechef.success = true;
-        codechef.profile = responseData.profile;
-        codechef.name = responseData.name;
-        codechef.currentRating = responseData.currentRating;
-        codechef.highestRating = responseData.highestRating || null;
-        codechef.globalRank = responseData.globalRank || null;
-        codechef.countryRank = responseData.countryRank || null;
-        codechef.contestGlobalRank = responseData.contestGlobalRank || null;
-        codechef.contestRatingDiff = responseData.contestRatingDiff || null;
-        codechef.contestName = responseData.contestName || null;
-        if (responseData.stars && responseData.stars.match(/\d+/)) {
-          codechef.stars = parseInt(responseData.stars.match(/\d+/)[0], 10);
-        } else {
-          codechef.stars = 1;
+      const response = await axios.get(
+        `${backendUrl}/api/contests/codechef/${user.codechefId}`,
+        { 
+          headers: { Authorization: `Bearer ${process.env.API_KEY}` },
+          timeout: 10000
         }
+      );
 
-        await codechef.save();
+      const responseData = response.data;
+      if (!responseData.success) {
+        throw new Error(responseData.error || "Failed to fetch CodeChef data");
+      }
+
+      const codechef = await Codechef.findOne({ user_id: req.params.id });
+      if (!codechef) {
+        return res.status(404).json({ error: "CodeChef profile not found" });
+      }
+
+      // Update profile
+      codechef.success = true;
+      codechef.profile = responseData.profile;
+      codechef.name = responseData.name;
+      codechef.currentRating = responseData.currentRating;
+      codechef.highestRating = responseData.highestRating || null;
+      codechef.globalRank = responseData.globalRank || null;
+      codechef.countryRank = responseData.countryRank || null;
+      codechef.contestGlobalRank = responseData.contestGlobalRank || null;
+      codechef.contestRatingDiff = responseData.contestRatingDiff || null;
+      codechef.contestName = responseData.contestName || null;
+      
+      if (responseData.stars && responseData.stars.match(/\d+/)) {
+        codechef.stars = parseInt(responseData.stars.match(/\d+/)[0], 10);
+      } else {
+        codechef.stars = 1;
+      }
+
+      await codechef.save();
+      
+      // Update user image if profile image exists
+      if (responseData.profile) {
         user.userImg = responseData.profile;
         await user.save();
-        res.status(200).send({ success: true, data: codechef });
-      } else {
-        console.log("No document found");
       }
+
+      res.status(200).json({ success: true, data: codechef });
     } catch (error) {
-      console.error(error);
+      console.error('Error updating CodeChef profile:', error);
+      throw error;
     }
   } catch (err) {
-    console.log(err);
-    res.send({ success: false, error: err });
+    console.error('Error in updateCodechefProfile:', err);
+    const statusCode = err.response?.status || 500;
+    res.status(statusCode).json({ 
+      success: false, 
+      error: err.message || "Failed to update CodeChef profile" 
+    });
   }
 };
 
